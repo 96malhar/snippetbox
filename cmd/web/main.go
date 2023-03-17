@@ -1,29 +1,50 @@
 package main
 
 import (
+	"database/sql"
 	"flag"
+	"fmt"
+	"github.com/96malhar/snippetbox/internal/store"
+	_ "github.com/lib/pq"
 	"log"
 	"net/http"
 	"os"
 )
 
+const (
+	psqlDriver = "postgres"
+	psqlInfo   = "host=localhost port=5432 user=web password=malhar123 sslmode=disable dbname=snippetbox"
+)
+
 type application struct {
-	errorLog *log.Logger
-	infoLog  *log.Logger
+	errorLog     *log.Logger
+	infoLog      *log.Logger
+	snippetStore *store.SnippetStore
 }
 
 func main() {
 	addr := flag.String("addr", ":4000", "HTTP network address")
+	dsn := flag.String("dsn", psqlInfo, "Postgres data source name")
 
 	flag.Parse()
 
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
-	app := &application{
-		errorLog: errorLog,
-		infoLog:  infoLog,
+	db, err := openDB(psqlDriver, *dsn)
+	if err != nil {
+		errorLog.Fatal(err)
 	}
+	defer db.Close()
+
+	app := &application{
+		errorLog:     errorLog,
+		infoLog:      infoLog,
+		snippetStore: store.NewSnippetStore(db),
+	}
+
+	sn, _ := app.snippetStore.Get(1)
+	fmt.Println(sn.Created.Local())
 
 	srv := &http.Server{
 		Addr:     *addr,
@@ -32,6 +53,21 @@ func main() {
 	}
 
 	infoLog.Printf("Starting server on %s", *addr)
-	err := srv.ListenAndServe()
+	err = srv.ListenAndServe()
 	errorLog.Fatal(err)
+}
+
+// openDB() function wraps sql.Open() and returns a sql.DB connection pool
+// for a given driverName and DSN.
+func openDB(driverName, dsn string) (*sql.DB, error) {
+	db, err := sql.Open(driverName, dsn)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = db.Ping(); err != nil {
+		return nil, err
+	}
+
+	return db, nil
 }
