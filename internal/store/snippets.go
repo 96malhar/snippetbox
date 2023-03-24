@@ -31,13 +31,13 @@ func NewSnippetStore(db *sql.DB) *SnippetStore {
 }
 
 // Insert will add a new snippet into the database and return the snippet ID.
-func (s *SnippetStore) Insert(title string, content string, expirationDays time.Duration) (int, error) {
+func (s *SnippetStore) Insert(title string, content string, expirationDays int) (int, error) {
 	stmt := `INSERT INTO snippets (title, content, created, expires)
     VALUES($1, $2, $3, $4)
 	returning id`
 
 	created := s.datetimeHandler.GetCurrentTimeUTC()
-	expires := created.Add(time.Hour * 24 * expirationDays)
+	expires := created.Add(time.Hour * 24 * time.Duration(expirationDays))
 
 	var id int
 	err := s.db.QueryRow(stmt, title, content, created, expires).Scan(&id)

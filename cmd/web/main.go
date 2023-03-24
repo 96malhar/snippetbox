@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"flag"
-	"fmt"
 	"github.com/96malhar/snippetbox/internal/store"
 	_ "github.com/lib/pq"
 	"log"
@@ -15,12 +14,6 @@ const (
 	psqlDriver = "postgres"
 	psqlInfo   = "host=localhost port=5432 user=web password=malhar123 sslmode=disable dbname=snippetbox"
 )
-
-type application struct {
-	errorLog     *log.Logger
-	infoLog      *log.Logger
-	snippetStore *store.SnippetStore
-}
 
 func main() {
 	addr := flag.String("addr", ":4000", "HTTP network address")
@@ -37,14 +30,17 @@ func main() {
 	}
 	defer db.Close()
 
-	app := &application{
-		errorLog:     errorLog,
-		infoLog:      infoLog,
-		snippetStore: store.NewSnippetStore(db),
+	templateCache, err := newTemplateCache()
+	if err != nil {
+		errorLog.Fatal(err)
 	}
 
-	sn, _ := app.snippetStore.Get(1)
-	fmt.Println(sn.Created.Local())
+	app := &application{
+		errorLog:      errorLog,
+		infoLog:       infoLog,
+		snippetStore:  store.NewSnippetStore(db),
+		templateCache: templateCache,
+	}
 
 	srv := &http.Server{
 		Addr:     *addr,

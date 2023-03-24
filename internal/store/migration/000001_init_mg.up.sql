@@ -16,19 +16,19 @@ CREATE INDEX idx_snippets_created ON snippets (created);
 -- Add some dummy records (which we'll use in the next couple of chapters).
 INSERT INTO snippets (title, content, created, expires)
 VALUES ('An old silent pond',
-        'An old silent pond...\nA frog jumps into the pond,\nsplash! Silence again.\n\n– Matsuo Bashō',
+        E'An old silent pond...\nA frog jumps into the pond,\nsplash! Silence again.\n\n– Matsuo Bashō',
         NOW() AT TIME ZONE 'UTC',
         (NOW() + INTERVAL '365 DAYS') AT TIME ZONE 'UTC');
 
 INSERT INTO snippets (title, content, created, expires)
 VALUES ('Over the wintry forest',
-        'Over the wintry\nforest, winds howl in rage\nwith no leaves to blow.\n\n– Natsume Soseki',
+        E'Over the wintry\nforest, winds howl in rage\nwith no leaves to blow.\n\n– Natsume Soseki',
         NOW() AT TIME ZONE 'UTC',
         (NOW() + INTERVAL '365 DAYS') AT TIME ZONE 'UTC');
 
 INSERT INTO snippets (title, content, created, expires)
 VALUES ('First autumn morning',
-        'First autumn morning\nthe mirror I stare into\nshows my father''s face.\n\n– Murakami Kijo',
+        E'First autumn morning\nthe mirror I stare into\nshows my father''s face.\n\n– Murakami Kijo',
         NOW() AT TIME ZONE 'UTC',
         (NOW() + INTERVAL '365 DAYS') AT TIME ZONE 'UTC');
 
