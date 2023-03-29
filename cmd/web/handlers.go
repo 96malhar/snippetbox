@@ -3,16 +3,12 @@ package main
 import (
 	"errors"
 	"github.com/96malhar/snippetbox/internal/store"
+	"github.com/go-chi/chi/v5"
 	"net/http"
 	"strconv"
 )
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
-		app.notFound(w)
-		return
-	}
-
 	snippets, err := app.snippetStore.Latest()
 	if err != nil {
 		app.serverError(w, err)
@@ -25,7 +21,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil || id < 1 {
 		app.notFound(w)
 		return
