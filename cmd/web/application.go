@@ -12,9 +12,13 @@ import (
 )
 
 type application struct {
-	errorLog      *log.Logger
-	infoLog       *log.Logger
-	snippetStore  *store.SnippetStore
+	errorLog     *log.Logger
+	infoLog      *log.Logger
+	snippetStore interface {
+		Insert(title string, content string, expirationDays int) (int, error)
+		Get(id int) (*store.Snippet, error)
+		Latest() ([]*store.Snippet, error)
+	}
 	templateCache map[string]*template.Template
 }
 
