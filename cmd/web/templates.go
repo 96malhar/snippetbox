@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/96malhar/snippetbox/internal/store"
 	"html/template"
+	"net/http"
 	"path/filepath"
 	"time"
 )
@@ -15,6 +16,7 @@ type templateData struct {
 	Snippet     *store.Snippet
 	Snippets    []*store.Snippet
 	CurrentYear int
+	Form        any
 }
 
 func humanDate(t time.Time) string {
@@ -49,4 +51,10 @@ func newTemplateCache() (map[string]*template.Template, error) {
 	}
 
 	return cache, nil
+}
+
+func newTemplateData(r *http.Request) *templateData {
+	return &templateData{
+		CurrentYear: time.Now().Year(),
+	}
 }

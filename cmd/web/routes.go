@@ -18,6 +18,7 @@ func (app *application) routes() http.Handler {
 
 	r.Get("/", app.home)
 	r.Get("/snippet/view/{id}", app.snippetView)
-	r.Post("/snippet/create", app.snippetCreate)
+	r.Get("/snippet/create", app.snippetCreate)
+	r.Post("/snippet/create", app.snippetCreatePost)
 	return r
 }

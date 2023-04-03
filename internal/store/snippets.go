@@ -3,7 +3,7 @@ package store
 import (
 	"database/sql"
 	"errors"
-	"github.com/96malhar/snippetbox/internal"
+	"github.com/96malhar/snippetbox/internal/datetime"
 	"time"
 )
 
@@ -27,7 +27,7 @@ type SnippetStore struct {
 }
 
 func NewSnippetStore(db *sql.DB) *SnippetStore {
-	return &SnippetStore{db: db, datetimeHandler: &internal.DateTimeHandler{}}
+	return &SnippetStore{db: db, datetimeHandler: &datetime.DateTimeHandler{}}
 }
 
 // Insert will add a new snippet into the database and return the snippet ID.

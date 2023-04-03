@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"flag"
 	"github.com/96malhar/snippetbox/internal/store"
+	"github.com/go-playground/form/v4"
 	_ "github.com/lib/pq"
 	"log"
 	"net/http"
@@ -40,6 +41,7 @@ func main() {
 		infoLog:       infoLog,
 		snippetStore:  store.NewSnippetStore(db),
 		templateCache: templateCache,
+		formDecoder:   form.NewDecoder(),
 	}
 
 	srv := &http.Server{
