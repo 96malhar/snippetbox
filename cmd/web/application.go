@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/96malhar/snippetbox/internal/store"
+	"github.com/alexedwards/scs/v2"
 	"github.com/go-playground/form/v4"
 	"html/template"
 	"log"
@@ -20,8 +21,9 @@ type application struct {
 		Get(id int) (*store.Snippet, error)
 		Latest() ([]*store.Snippet, error)
 	}
-	templateCache map[string]*template.Template
-	formDecoder   *form.Decoder
+	templateCache  map[string]*template.Template
+	formDecoder    *form.Decoder
+	sessionManager *scs.SessionManager
 }
 
 func (app *application) serverError(w http.ResponseWriter, err error) {

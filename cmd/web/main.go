@@ -4,11 +4,14 @@ import (
 	"database/sql"
 	"flag"
 	"github.com/96malhar/snippetbox/internal/store"
+	"github.com/alexedwards/scs/postgresstore"
+	"github.com/alexedwards/scs/v2"
 	"github.com/go-playground/form/v4"
 	_ "github.com/lib/pq"
 	"log"
 	"net/http"
 	"os"
+	"time"
 )
 
 const (
@@ -36,12 +39,17 @@ func main() {
 		errorLog.Fatal(err)
 	}
 
+	sessionManager := scs.New()
+	sessionManager.Store = postgresstore.New(db)
+	sessionManager.Lifetime = 12 * time.Hour
+
 	app := &application{
-		errorLog:      errorLog,
-		infoLog:       infoLog,
-		snippetStore:  store.NewSnippetStore(db),
-		templateCache: templateCache,
-		formDecoder:   form.NewDecoder(),
+		errorLog:       errorLog,
+		infoLog:        infoLog,
+		snippetStore:   store.NewSnippetStore(db),
+		templateCache:  templateCache,
+		formDecoder:    form.NewDecoder(),
+		sessionManager: sessionManager,
 	}
 
 	srv := &http.Server{

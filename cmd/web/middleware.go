@@ -37,3 +37,7 @@ func (app *application) recoverPanic(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
+
+func CreateMiddlewareGroup(fns ...func(handler http.Handler) http.Handler) []func(handler http.Handler) http.Handler {
+	return fns
+}
