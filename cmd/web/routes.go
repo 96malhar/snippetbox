@@ -19,10 +19,17 @@ func (app *application) routes() http.Handler {
 
 	r.Group(func(r chi.Router) {
 		r.Use(app.sessionManager.LoadAndSave)
+
 		r.Get("/", app.home)
 		r.Get("/snippet/view/{id}", app.snippetView)
 		r.Get("/snippet/create", app.snippetCreate)
 		r.Post("/snippet/create", app.snippetCreatePost)
+
+		r.Get("/user/signup", app.userSignup)
+		r.Post("/user/signup", app.userSignupPost)
+		r.Get("/user/login", app.userLogin)
+		r.Post("/user/login", app.userLoginPost)
+		r.Post("/user/logout", app.userLogoutPost)
 	})
 
 	return r

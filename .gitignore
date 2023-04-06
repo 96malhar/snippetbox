@@ -24,3 +24,4 @@
 
 # Go workspace file
 go.work
+tls/
