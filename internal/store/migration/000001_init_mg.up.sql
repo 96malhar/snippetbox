@@ -12,11 +12,25 @@ CREATE TABLE snippets
 -- Add an index on the created column.
 CREATE INDEX idx_snippets_created ON snippets (created);
 
+--Create a `users` table.
+CREATE TABLE users
+(
+    id              SERIAL PRIMARY KEY       NOT NULL,
+    name            VARCHAR(255)             NOT NULL,
+    email           VARCHAR(255)             NOT NULL,
+    hashed_password CHAR(60)                 NOT NULL,
+    created         TIMESTAMP WITH TIME ZONE NOT NULL
+);
+
+ALTER TABLE users
+    ADD CONSTRAINT users_uc_email UNIQUE (email);
+
 -- Create a `sessions` table.
-CREATE TABLE sessions (
-	token TEXT PRIMARY KEY,
-	data BYTEA NOT NULL,
-	expiry TIMESTAMP WITH TIME ZONE NOT NULL
+CREATE TABLE sessions
+(
+    token  TEXT PRIMARY KEY,
+    data   BYTEA                    NOT NULL,
+    expiry TIMESTAMP WITH TIME ZONE NOT NULL
 );
 
 -- Add an index on the expiry column.
@@ -41,7 +55,8 @@ VALUES ('First autumn morning',
         NOW(),
         NOW() + INTERVAL '365 DAYS');
 
-CREATE USER web WITH password 'malhar123';
+CREATE
+    USER web WITH password 'malhar123';
 GRANT SELECT, INSERT, UPDATE, DELETE ON snippets TO web;
 GRANT USAGE, SELECT ON SEQUENCE snippets_id_seq TO web;
 GRANT SELECT, INSERT, UPDATE, DELETE ON sessions TO web;

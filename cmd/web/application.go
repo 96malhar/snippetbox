@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/96malhar/snippetbox/internal/store"
 	"github.com/alexedwards/scs/v2"
 	"github.com/go-playground/form/v4"
 	"html/template"
@@ -14,13 +13,10 @@ import (
 )
 
 type application struct {
-	errorLog     *log.Logger
-	infoLog      *log.Logger
-	snippetStore interface {
-		Insert(title string, content string, expirationDays int) (int, error)
-		Get(id int) (*store.Snippet, error)
-		Latest() ([]*store.Snippet, error)
-	}
+	errorLog       *log.Logger
+	infoLog        *log.Logger
+	snippetStore   snippetStoreInterface
+	userStore      userStoreInterface
 	templateCache  map[string]*template.Template
 	formDecoder    *form.Decoder
 	sessionManager *scs.SessionManager

@@ -11,10 +11,10 @@ import (
 )
 
 type snippetCreateForm struct {
-	Title       string            `form:"title"`
-	Content     string            `form:"content"`
-	Expires     int               `form:"expires"`
-	FieldErrors map[string]string `form:"-"`
+	Title                string `form:"title"`
+	Content              string `form:"content"`
+	Expires              int    `form:"expires"`
+	validation.Validator `form:"-"`
 }
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
@@ -69,16 +69,13 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	fieldErrors := checkFields(
-		fieldEntry{validation.NotBlank(form.Title), "title", "This field cannot be blank"},
-		fieldEntry{validation.NotBlank(form.Content), "content", "This field cannot be blank"},
-		fieldEntry{validation.MaxChars(form.Title, 100), "title", "This field cannot be more than 100 characters long"},
-		fieldEntry{validation.PermittedInt(form.Expires, 1, 7, 365), "expires", "This field must equal 1, 7 or 365"},
-	)
+	form.CheckField(validation.NotBlank(form.Title), "title", "This field cannot be blank")
+	form.CheckField(validation.NotBlank(form.Content), "content", "This field cannot be blank")
+	form.CheckField(validation.MaxChars(form.Title, 100), "title", "This field cannot be more than 100 characters long")
+	form.CheckField(validation.PermittedInt(form.Expires, 1, 7, 365), "expires", "This field must equal 1, 7 or 365")
 
-	if len(fieldErrors) > 0 {
+	if !form.Valid() {
 		data := app.newTemplateData(r)
-		form.FieldErrors = fieldErrors
 		data.Form = form
 		app.render(w, http.StatusUnprocessableEntity, "create.tmpl", data)
 		return

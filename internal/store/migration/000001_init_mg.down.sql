@@ -2,6 +2,8 @@
 
 DROP TABLE IF EXISTS snippets;
 
+DROP TABLE IF EXISTS users;
+
 DROP TABLE IF EXISTS sessions;
 
 DROP USER IF EXISTS web;

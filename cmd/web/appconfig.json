@@ -1,0 +1,7 @@
+{
+  "port": ":4000",
+  "database": {
+    "driver": "postgres",
+    "connStr": "host=localhost port=5432 user=web password=malhar123 sslmode=disable dbname=snippetbox"
+  }
+}

@@ -3,33 +3,30 @@ package main
 import (
 	"crypto/tls"
 	"database/sql"
-	"flag"
+	"fmt"
 	"github.com/96malhar/snippetbox/internal/store"
 	"github.com/alexedwards/scs/postgresstore"
 	"github.com/alexedwards/scs/v2"
 	"github.com/go-playground/form/v4"
 	_ "github.com/lib/pq"
+	"github.com/spf13/viper"
 	"log"
 	"net/http"
 	"os"
 	"time"
 )
 
-const (
-	psqlDriver = "postgres"
-	psqlInfo   = "host=localhost port=5432 user=web password=malhar123 sslmode=disable dbname=snippetbox"
-)
-
 func main() {
-	addr := flag.String("addr", ":4000", "HTTP network address")
-	dsn := flag.String("dsn", psqlInfo, "Postgres data source name")
-
-	flag.Parse()
-
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
-	db, err := openDB(psqlDriver, *dsn)
+	viper.SetConfigFile("./cmd/web/appconfig.json")
+	err := viper.ReadInConfig()
+	if err != nil {
+		errorLog.Fatal(fmt.Sprintf("Failed to read config file. Err = %s", err))
+	}
+
+	db, err := openDB(viper.GetString("database.driver"), viper.GetString("database.connStr"))
 	if err != nil {
 		errorLog.Fatal(err)
 	}
@@ -49,6 +46,7 @@ func main() {
 		errorLog:       errorLog,
 		infoLog:        infoLog,
 		snippetStore:   store.NewSnippetStore(db),
+		userStore:      store.NewUserStore(db),
 		templateCache:  templateCache,
 		formDecoder:    form.NewDecoder(),
 		sessionManager: sessionManager,
@@ -58,8 +56,9 @@ func main() {
 		CurvePreferences: []tls.CurveID{tls.X25519, tls.CurveP256},
 	}
 
+	port := viper.GetString("port")
 	srv := &http.Server{
-		Addr:         *addr,
+		Addr:         port,
 		ErrorLog:     errorLog,
 		Handler:      app.routes(),
 		TLSConfig:    tlsConfig,
@@ -68,7 +67,7 @@ func main() {
 		WriteTimeout: 10 * time.Second,
 	}
 
-	infoLog.Printf("Starting server on %s", *addr)
+	infoLog.Printf("Starting server on %s", port)
 	err = srv.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
 	errorLog.Fatal(err)
 }
