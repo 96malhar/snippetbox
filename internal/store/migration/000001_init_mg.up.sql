@@ -19,11 +19,9 @@ CREATE TABLE users
     name            VARCHAR(255)             NOT NULL,
     email           VARCHAR(255)             NOT NULL,
     hashed_password CHAR(60)                 NOT NULL,
-    created         TIMESTAMP WITH TIME ZONE NOT NULL
+    created         TIMESTAMP WITH TIME ZONE NOT NULL,
+    CONSTRAINT users_uc_email UNIQUE (email)
 );
-
-ALTER TABLE users
-    ADD CONSTRAINT users_uc_email UNIQUE (email);
 
 -- Create a `sessions` table.
 CREATE TABLE sessions
@@ -60,3 +58,5 @@ CREATE
 GRANT SELECT, INSERT, UPDATE, DELETE ON snippets TO web;
 GRANT USAGE, SELECT ON SEQUENCE snippets_id_seq TO web;
 GRANT SELECT, INSERT, UPDATE, DELETE ON sessions TO web;
+GRANT SELECT, INSERT, UPDATE, DELETE ON users TO web;
+GRANT USAGE, SELECT ON SEQUENCE users_id_seq TO web;

@@ -1,14 +1,21 @@
 package validation
 
 import (
+	"regexp"
 	"strings"
 	"sync"
 	"unicode/utf8"
 )
 
+// EmailRX stores the regex to validate email addresses.
+// Parsing this pattern once at startup and storing the compiled *regexp.Regexp in a
+// variable is more performant than re-parsing the pattern each time we need it.
+var EmailRX = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+
 type Validator struct {
-	once        sync.Once
-	FieldErrors map[string]string
+	once           sync.Once
+	FieldErrors    map[string]string
+	NonFieldErrors []string
 }
 
 func (v *Validator) initialize() {
@@ -17,17 +24,22 @@ func (v *Validator) initialize() {
 	})
 }
 
-// Valid returns true if the FieldErrors map doesn't contain any entries.
+// Valid returns true if the FieldErrors map and NonFieldErrors slice doesn't contain any entries.
 func (v *Validator) Valid() bool {
-	return len(v.FieldErrors) == 0
+	return len(v.FieldErrors) == 0 && len(v.NonFieldErrors) == 0
 }
 
-// AddFieldError adds an error message to the FieldErrors map (so long as no
+// addFieldError adds an error message to the FieldErrors map (so long as no
 // entry already exists for the given key).
 func (v *Validator) addFieldError(key, message string) {
 	if _, exists := v.FieldErrors[key]; !exists {
 		v.FieldErrors[key] = message
 	}
+}
+
+// addNonFieldError adds an error messages to the NonFieldErrors slice.
+func (v *Validator) addNonFieldError(message string) {
+	v.NonFieldErrors = append(v.NonFieldErrors, message)
 }
 
 // CheckField adds an error message to the FieldErrors map only if a
@@ -36,6 +48,14 @@ func (v *Validator) CheckField(ok bool, key, message string) {
 	v.initialize()
 	if !ok {
 		v.addFieldError(key, message)
+	}
+}
+
+// CheckNonField adds an error message to NonFieldErrors slice only if a validation check is not 'ok'.
+func (v *Validator) CheckNonField(ok bool, message string) {
+	v.initialize()
+	if !ok {
+		v.addNonFieldError(message)
 	}
 }
 
@@ -57,4 +77,15 @@ func PermittedInt(value int, permittedValues ...int) bool {
 		}
 	}
 	return false
+}
+
+// MinChars returns true if a value contains at least n characters.
+func MinChars(value string, n int) bool {
+	return utf8.RuneCountInString(value) >= n
+}
+
+// Matches returns true if a value matches a provided compiled regular
+// expression pattern.
+func Matches(value string, rx *regexp.Regexp) bool {
+	return rx.MatchString(value)
 }

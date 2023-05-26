@@ -13,11 +13,12 @@ import (
 // At the moment it only contains one field, but we'll add more
 // to it as the build progresses.
 type templateData struct {
-	Snippet     *store.Snippet
-	Snippets    []*store.Snippet
-	CurrentYear int
-	Form        any
-	Flash       string
+	Snippet         *store.Snippet
+	Snippets        []*store.Snippet
+	CurrentYear     int
+	Form            any
+	Flash           string
+	IsAuthenticated bool
 }
 
 func humanDate(t time.Time) string {
@@ -56,7 +57,8 @@ func newTemplateCache() (map[string]*template.Template, error) {
 
 func (app *application) newTemplateData(r *http.Request) *templateData {
 	return &templateData{
-		CurrentYear: time.Now().Year(),
-		Flash:       app.sessionManager.PopString(r.Context(), "flash"),
+		CurrentYear:     time.Now().Year(),
+		Flash:           app.sessionManager.PopString(r.Context(), "flash"),
+		IsAuthenticated: app.isAuthenticated(r),
 	}
 }
