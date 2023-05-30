@@ -11,4 +11,4 @@ Table is created via - https://www.tablesgenerator.com/markdown_tables
 | GET    | /user/login        | userLogin         | Display a HTML form for logging in a user      |   |
 | POST   | /user/login        | userLoginPost     | Authenticate and login the user                |   |
 | POST   | /user/logout       | userLogoutPost    | Logout the user                                |   |
-| GET    | /static/*filepath  | http.FileServer   | Serve a specific static file                   |   |
+| GET    | /static/*          | http.FileServer   | Serve a specific static file                   |   |

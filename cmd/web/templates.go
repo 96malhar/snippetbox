@@ -2,7 +2,9 @@ package main
 
 import (
 	"github.com/96malhar/snippetbox/internal/store"
+	"github.com/96malhar/snippetbox/ui"
 	"html/template"
+	"io/fs"
 	"net/http"
 	"path/filepath"
 	"time"
@@ -32,19 +34,16 @@ var functions = template.FuncMap{
 func newTemplateCache() (map[string]*template.Template, error) {
 	cache := make(map[string]*template.Template)
 
-	pages, err := filepath.Glob("./ui/html/pages/*.tmpl")
+	pages, err := fs.Glob(ui.Files, "html/pages/*.tmpl")
 	if err != nil {
 		return nil, err
 	}
 
 	for _, page := range pages {
 		name := filepath.Base(page)
-		ts, err := template.New(name).Funcs(functions).ParseFiles("./ui/html/base.tmpl", page)
-		if err != nil {
-			return nil, err
-		}
 
-		ts, err = ts.ParseGlob("./ui/html/partials/*.tmpl")
+		patterns := []string{"html/base.tmpl", "html/partials/*.tmpl", page}
+		ts, err := template.New(name).Funcs(functions).ParseFS(ui.Files, patterns...)
 		if err != nil {
 			return nil, err
 		}

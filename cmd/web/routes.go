@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/96malhar/snippetbox/ui"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"net/http"
@@ -13,12 +14,11 @@ func (app *application) routes() http.Handler {
 		app.notFound(w)
 	})
 
-	fileServer := http.FileServer(http.Dir("./ui/static/"))
-	r.Method(http.MethodGet, "/static/*", http.StripPrefix("/static", fileServer))
+	fileServer := http.FileServer(http.FS(ui.Files))
+	r.Method(http.MethodGet, "/static/*", fileServer)
 
 	r.Group(func(r chi.Router) {
 		r.Use(app.sessionManager.LoadAndSave, app.authenticate)
-
 		r.Get("/", app.home)
 		r.Get("/snippet/view/{id}", app.snippetView)
 		r.Get("/user/signup", app.userSignup)
@@ -29,7 +29,6 @@ func (app *application) routes() http.Handler {
 
 	r.Group(func(r chi.Router) {
 		r.Use(app.sessionManager.LoadAndSave, app.authenticate, app.requireAuthentication)
-
 		r.Get("/snippet/create", app.snippetCreate)
 		r.Post("/snippet/create", app.snippetCreatePost)
 		r.Post("/user/logout", app.userLogoutPost)
