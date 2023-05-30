@@ -80,5 +80,10 @@ func (s *UserStore) Authenticate(email, password string) (int, error) {
 }
 
 func (s *UserStore) Exists(id int) (bool, error) {
-	return false, nil
+	var exists bool
+
+	stmt := "SELECT EXISTS(SELECT true FROM users WHERE id = $1)"
+
+	err := s.db.QueryRow(stmt, id).Scan(&exists)
+	return exists, err
 }
