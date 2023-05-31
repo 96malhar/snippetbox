@@ -16,6 +16,7 @@ func (app *application) routes() http.Handler {
 
 	fileServer := http.FileServer(http.FS(ui.Files))
 	r.Method(http.MethodGet, "/static/*", fileServer)
+	r.Get("/ping", ping)
 
 	r.Group(func(r chi.Router) {
 		r.Use(app.sessionManager.LoadAndSave, app.authenticate)
