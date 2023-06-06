@@ -8,8 +8,8 @@ import (
 )
 
 func (app *application) routes() http.Handler {
+
 	r := chi.NewRouter()
-	r.Use(app.recoverPanic, middleware.StripSlashes, app.logRequest, middleware.GetHead, secureHeaders)
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
 		app.notFound(w)
 	})
@@ -18,7 +18,12 @@ func (app *application) routes() http.Handler {
 	r.Method(http.MethodGet, "/static/*", fileServer)
 	r.Get("/ping", ping)
 
+	standardMiddlewares := []func(handler http.Handler) http.Handler{
+		app.recoverPanic, middleware.StripSlashes, app.logRequest, middleware.GetHead, secureHeaders,
+	}
+
 	r.Group(func(r chi.Router) {
+		r.Use(standardMiddlewares...)
 		r.Use(app.sessionManager.LoadAndSave, app.authenticate)
 		r.Get("/", app.home)
 		r.Get("/snippet/view/{id}", app.snippetView)
@@ -29,6 +34,7 @@ func (app *application) routes() http.Handler {
 	})
 
 	r.Group(func(r chi.Router) {
+		r.Use(standardMiddlewares...)
 		r.Use(app.sessionManager.LoadAndSave, app.authenticate, app.requireAuthentication)
 		r.Get("/snippet/create", app.snippetCreate)
 		r.Post("/snippet/create", app.snippetCreatePost)

@@ -3,11 +3,11 @@
 --Create a `snippets` table.
 CREATE TABLE snippets
 (
-    id      SERIAL PRIMARY KEY       NOT NULL,
-    title   VARCHAR(100)             NOT NULL,
-    content TEXT                     NOT NULL,
-    created TIMESTAMP WITH TIME ZONE NOT NULL,
-    expires TIMESTAMP WITH TIME ZONE NOT NULL
+    id      INT Generated Always As IDENTITY PRIMARY KEY NOT NULL,
+    title   VARCHAR(100)                                 NOT NULL,
+    content TEXT                                         NOT NULL,
+    created TIMESTAMP WITH TIME ZONE                     NOT NULL,
+    expires TIMESTAMP WITH TIME ZONE                     NOT NULL
 );
 -- Add an index on the created column.
 CREATE INDEX idx_snippets_created ON snippets (created);
@@ -15,11 +15,11 @@ CREATE INDEX idx_snippets_created ON snippets (created);
 --Create a `users` table.
 CREATE TABLE users
 (
-    id              SERIAL PRIMARY KEY       NOT NULL,
-    name            VARCHAR(255)             NOT NULL,
-    email           VARCHAR(255)             NOT NULL,
-    hashed_password CHAR(60)                 NOT NULL,
-    created         TIMESTAMP WITH TIME ZONE NOT NULL,
+    id              INT Generated Always As IDENTITY PRIMARY KEY NOT NULL,
+    name            VARCHAR(255)                                 NOT NULL,
+    email           VARCHAR(255)                                 NOT NULL,
+    hashed_password CHAR(60)                                     NOT NULL,
+    created         TIMESTAMP WITH TIME ZONE                     NOT NULL,
     CONSTRAINT users_uc_email UNIQUE (email)
 );
 
@@ -56,7 +56,5 @@ VALUES ('First autumn morning',
 CREATE
     USER web WITH password 'malhar123';
 GRANT SELECT, INSERT, UPDATE, DELETE ON snippets TO web;
-GRANT USAGE, SELECT ON SEQUENCE snippets_id_seq TO web;
 GRANT SELECT, INSERT, UPDATE, DELETE ON sessions TO web;
 GRANT SELECT, INSERT, UPDATE, DELETE ON users TO web;
-GRANT USAGE, SELECT ON SEQUENCE users_id_seq TO web;
