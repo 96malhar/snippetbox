@@ -23,9 +23,4 @@ tasks:
   test:
     desc: Runs all tests
     cmds:
-      - go test ./...
-
-  test-verbose:
-    desc: Runs all tests in verbose mode
-    cmds:
-      - go test ./... -v
+      - go test ./... {{.CLI_ARGS}}

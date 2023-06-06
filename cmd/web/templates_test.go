@@ -76,7 +76,5 @@ func TestNewTemplateData(t *testing.T) {
 	}
 
 	td := app.newTemplateData(req)
-	if td.Flash != flashMessage {
-		t.Fatalf("td.Flash = %s; want = %s", td.Flash, flashMessage)
-	}
+	assert.Equal(t, td.Flash, flashMessage)
 }

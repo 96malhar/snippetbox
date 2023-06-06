@@ -143,6 +143,94 @@ func TestSnippetCreate(t *testing.T) {
 	})
 }
 
+func TestSnippetCreatePost(t *testing.T) {
+	app := newTestApplication(t)
+	ts := newTestServer(t, app.routes())
+	defer ts.Close()
+
+	validTitle := "This is a snippet title"
+	validContent := "This is snippet content"
+	validExpires := "7"
+
+	t.Run("Unauthenticated", func(t *testing.T) {
+		form := url.Values{}
+		form.Add("title", validTitle)
+		form.Add("content", validContent)
+		form.Add("expires", validExpires)
+		resp := ts.postForm(t, "/snippet/create", form)
+
+		// The post request fails and redirects the user to the login page
+		assert.Equal(t, resp.StatusCode, http.StatusSeeOther)
+		assert.Equal(t, resp.Header.Get("Location"), "/user/login")
+	})
+
+	t.Run("Authenticated", func(t *testing.T) {
+		// Insert a dummy user in the userStore
+		app.userStore.Insert("alice", "alice@example.com", "pa$$word")
+
+		// Make a POST /user/login request using the dummy user inserted above
+		form := url.Values{}
+		form.Add("email", "alice@example.com")
+		form.Add("password", "pa$$word")
+		ts.postForm(t, "/user/login", form)
+
+		tests := []struct {
+			name           string
+			snippetTitle   string
+			snippetContent string
+			snippetExpires string
+			wantStatusCode int
+			wantHeaders    map[string]string
+		}{
+			{
+				name:           "Valid form",
+				snippetTitle:   validTitle,
+				snippetContent: validContent,
+				snippetExpires: validExpires,
+				wantStatusCode: http.StatusSeeOther,
+				wantHeaders:    map[string]string{"Location": "/snippet/view/1"},
+			},
+			{
+				name:           "Empty title",
+				snippetTitle:   "",
+				snippetContent: validContent,
+				snippetExpires: validExpires,
+				wantStatusCode: http.StatusUnprocessableEntity,
+			},
+			{
+				name:           "Empty content",
+				snippetTitle:   validTitle,
+				snippetContent: "",
+				snippetExpires: validExpires,
+				wantStatusCode: http.StatusUnprocessableEntity,
+			},
+			{
+				name:           "Invalid expiration",
+				snippetTitle:   validTitle,
+				snippetContent: validContent,
+				snippetExpires: "10",
+				wantStatusCode: http.StatusUnprocessableEntity,
+			},
+		}
+
+		for _, tc := range tests {
+			t.Run(tc.name, func(t *testing.T) {
+				form := url.Values{}
+				form.Add("title", tc.snippetTitle)
+				form.Add("content", tc.snippetContent)
+				form.Add("expires", tc.snippetExpires)
+				resp := ts.postForm(t, "/snippet/create", form)
+
+				assert.Equal(t, resp.StatusCode, tc.wantStatusCode)
+
+				for key, val := range tc.wantHeaders {
+					assert.Equal(t, resp.Header.Get(key), val)
+				}
+			})
+		}
+	})
+}
+
 func TestUserSignup(t *testing.T) {
 	app := newTestApplication(t)
 	ts := newTestServer(t, app.routes())
