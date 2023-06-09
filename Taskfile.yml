@@ -8,7 +8,6 @@ tasks:
     desc: Performs a down database migration
     cmds:
       - migrate -path ./internal/store/migration -database "postgresql://postgres@localhost:5432/snippetbox?sslmode=disable" -verbose down
-    interactive: true
 
   migrate-up:
     desc: Performs an up database migration
