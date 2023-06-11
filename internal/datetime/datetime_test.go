@@ -28,8 +28,8 @@ func TestDateTimeHandler_GetCurrentTimeUTC(t *testing.T) {
 			utcNow = func() time.Time {
 				return tt.setTime
 			}
-			d := &DateTimeHandler{}
-			if got := d.GetCurrentTimeUTC(); !reflect.DeepEqual(got, tt.want) {
+			h := &Handler{}
+			if got := h.GetCurrentTimeUTC(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetCurrentTimeUTC() = %v, want %v", got, tt.want)
 			}
 		})

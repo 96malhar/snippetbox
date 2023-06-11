@@ -6,8 +6,8 @@ var utcNow = func() time.Time {
 	return time.Now().UTC()
 }
 
-type DateTimeHandler struct{}
+type Handler struct{}
 
-func (d *DateTimeHandler) GetCurrentTimeUTC() time.Time {
+func (h *Handler) GetCurrentTimeUTC() time.Time {
 	return utcNow().Round(time.Second)
 }

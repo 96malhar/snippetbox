@@ -26,7 +26,7 @@ type UserStore struct {
 }
 
 func NewUserStore(db *sql.DB) *UserStore {
-	return &UserStore{db: db, datetimeHandler: &datetime.DateTimeHandler{}}
+	return &UserStore{db: db, datetimeHandler: &datetime.Handler{}}
 }
 
 func (s *UserStore) Insert(name, email, password string) error {

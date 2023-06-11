@@ -27,7 +27,7 @@ type SnippetStore struct {
 }
 
 func NewSnippetStore(db *sql.DB) *SnippetStore {
-	return &SnippetStore{db: db, datetimeHandler: &datetime.DateTimeHandler{}}
+	return &SnippetStore{db: db, datetimeHandler: &datetime.Handler{}}
 }
 
 // Insert will add a new snippet into the database and return the snippet ID.
