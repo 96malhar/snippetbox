@@ -2,17 +2,18 @@ version: '3'
 
 vars:
   MAIN_PACKAGE_PATH: "./cmd/web"
+  DB_CONN: "postgresql://postgres@localhost:5432/snippetbox?sslmode=disable"
 
 tasks:
   migrate-down:
     desc: Performs a down database migration
     cmds:
-      - migrate -path ./internal/store/migration -database "postgresql://postgres@localhost:5432/snippetbox?sslmode=disable" -verbose down
+      - migrate -path ./internal/store/migration -database {{.DB_CONN}} -verbose down
 
   migrate-up:
     desc: Performs an up database migration
     cmds:
-      - migrate -path ./internal/store/migration -database "postgresql://postgres@localhost:5432/snippetbox?sslmode=disable" -verbose up
+      - migrate -path ./internal/store/migration -database {{.DB_CONN}} -verbose up
 
   run:
     desc: Runs the main package

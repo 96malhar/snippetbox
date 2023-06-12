@@ -3,13 +3,12 @@ package main
 import (
 	"crypto/tls"
 	"database/sql"
-	"fmt"
 	"github.com/96malhar/snippetbox/internal/store"
 	"github.com/alexedwards/scs/postgresstore"
 	"github.com/alexedwards/scs/v2"
 	"github.com/go-playground/form/v4"
+	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
-	"github.com/spf13/viper"
 	"log"
 	"net/http"
 	"os"
@@ -20,13 +19,11 @@ func main() {
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
-	viper.SetConfigFile("./cmd/web/appconfig.json")
-	err := viper.ReadInConfig()
-	if err != nil {
-		errorLog.Fatal(fmt.Sprintf("Failed to read config file. Err = %s", err))
+	if err := godotenv.Load(); err != nil {
+		errorLog.Fatal("Failed to load environment variables")
 	}
 
-	db, err := openDB(viper.GetString("database.driver"), viper.GetString("database.connStr"))
+	db, err := openDB("postgres", os.Getenv("DB_CONN"))
 	if err != nil {
 		errorLog.Fatal(err)
 	}
@@ -56,7 +53,7 @@ func main() {
 		CurvePreferences: []tls.CurveID{tls.X25519, tls.CurveP256},
 	}
 
-	port := viper.GetString("port")
+	port := os.Getenv("SERVER_PORT")
 	srv := &http.Server{
 		Addr:         port,
 		ErrorLog:     errorLog,

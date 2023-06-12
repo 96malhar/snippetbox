@@ -55,6 +55,4 @@ VALUES ('First autumn morning',
 
 CREATE
     USER web WITH password 'malhar123';
-GRANT SELECT, INSERT, UPDATE, DELETE ON snippets TO web;
-GRANT SELECT, INSERT, UPDATE, DELETE ON sessions TO web;
-GRANT SELECT, INSERT, UPDATE, DELETE ON users TO web;
+GRANT SELECT, INSERT, UPDATE, DELETE ON snippets, sessions, users TO web;
