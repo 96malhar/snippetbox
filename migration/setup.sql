@@ -1,5 +1,3 @@
--- migrate -path ./internal/store/migration -database "postgresql://postgres@localhost:5432/snippetbox?sslmode=disable" -verbose up
-
 --Create a `snippets` table.
 CREATE TABLE snippets
 (
@@ -53,6 +51,4 @@ VALUES ('First autumn morning',
         NOW(),
         NOW() + INTERVAL '365 DAYS');
 
-CREATE
-    USER web WITH password 'malhar123';
 GRANT SELECT, INSERT, UPDATE, DELETE ON snippets, sessions, users TO web;

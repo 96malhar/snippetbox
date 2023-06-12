@@ -23,7 +23,7 @@ func main() {
 		errorLog.Fatal("Failed to load environment variables")
 	}
 
-	db, err := openDB("postgres", os.Getenv("DB_CONN"))
+	db, err := openDB()
 	if err != nil {
 		errorLog.Fatal(err)
 	}
@@ -53,9 +53,9 @@ func main() {
 		CurvePreferences: []tls.CurveID{tls.X25519, tls.CurveP256},
 	}
 
-	port := os.Getenv("SERVER_PORT")
+	serverPort := os.Getenv("SERVER_PORT")
 	srv := &http.Server{
-		Addr:         port,
+		Addr:         serverPort,
 		ErrorLog:     errorLog,
 		Handler:      app.routes(),
 		TLSConfig:    tlsConfig,
@@ -64,15 +64,15 @@ func main() {
 		WriteTimeout: 10 * time.Second,
 	}
 
-	infoLog.Printf("Starting server on %s", port)
+	infoLog.Printf("Starting server on %s", serverPort)
 	err = srv.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
 	errorLog.Fatal(err)
 }
 
 // openDB() function wraps sql.Open() and returns a sql.DB connection pool
 // for a given driverName and DSN.
-func openDB(driverName, dsn string) (*sql.DB, error) {
-	db, err := sql.Open(driverName, dsn)
+func openDB() (*sql.DB, error) {
+	db, err := sql.Open("postgres", os.Getenv("DB_CONN"))
 	if err != nil {
 		return nil, err
 	}

@@ -1,24 +1,24 @@
 version: '3'
 
-vars:
-  MAIN_PACKAGE_PATH: "./cmd/web"
-  DB_CONN: "postgresql://postgres@localhost:5432/snippetbox?sslmode=disable"
+dotenv: ['.env']
 
 tasks:
-  migrate-down:
-    desc: Performs a down database migration
+  init-db:
     cmds:
-      - migrate -path ./internal/store/migration -database {{.DB_CONN}} -verbose down
+      - psql -U postgres -c "CREATE DATABASE {{.DB_NAME}};"
+      - psql -U postgres -c "CREATE USER {{.DB_USER}} WITH PASSWORD '{{.DB_PASSWORD}}';"
+      - psql -U postgres -d {{.DB_NAME}} -f ./migration/setup.sql
+      - psql -U postgres -d {{.DB_NAME}} -c "GRANT SELECT, INSERT, UPDATE, DELETE ON snippets, sessions, users TO {{.DB_USER}};"
 
-  migrate-up:
-    desc: Performs an up database migration
+  drop-db:
     cmds:
-      - migrate -path ./internal/store/migration -database {{.DB_CONN}} -verbose up
+      - psql -U postgres -c "DROP DATABASE IF EXISTS {{.DB_NAME}};"
+      - psql -U postgres -c "DROP USER IF EXISTS {{.DB_USER}};"
 
   run:
     desc: Runs the main package
     cmds:
-      - go run {{.MAIN_PACKAGE_PATH}}
+      - go run ./cmd/web
 
   test:
     desc: Runs all tests

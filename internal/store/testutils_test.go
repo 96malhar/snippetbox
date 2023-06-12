@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 )
 
-const superUserConnStr = "host=localhost port=5432 user=postgres sslmode=disable dbname=postgres"
+const superUserConnStr = "host=localhost port=5432 user=postgres password=postgres sslmode=disable dbname=postgres"
 
 func newTestDB(t *testing.T) (*sql.DB, string) {
 	randomSuffix := strings.Split(uuid.New().String(), "-")[0]
