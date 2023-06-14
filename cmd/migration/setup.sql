@@ -50,5 +50,3 @@ VALUES ('First autumn morning',
         E'First autumn morning\nthe mirror I stare into\nshows my father''s face.\n\n– Murakami Kijo',
         NOW(),
         NOW() + INTERVAL '365 DAYS');
-
-GRANT SELECT, INSERT, UPDATE, DELETE ON snippets, sessions, users TO web;

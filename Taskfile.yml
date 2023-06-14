@@ -3,20 +3,16 @@ version: '3'
 dotenv: ['.env']
 
 tasks:
-  init-db:
+  migrate-up:
     cmds:
-      - psql -U postgres -c "CREATE DATABASE {{.DB_NAME}};"
-      - psql -U postgres -c "CREATE USER {{.DB_USER}} WITH PASSWORD '{{.DB_PASSWORD}}';"
-      - psql -U postgres -d {{.DB_NAME}} -f ./migration/setup.sql
-      - psql -U postgres -d {{.DB_NAME}} -c "GRANT SELECT, INSERT, UPDATE, DELETE ON snippets, sessions, users TO {{.DB_USER}};"
+      - go run ./cmd/migration up
 
-  drop-db:
+  migrate-down:
     cmds:
-      - psql -U postgres -c "DROP DATABASE IF EXISTS {{.DB_NAME}};"
-      - psql -U postgres -c "DROP USER IF EXISTS {{.DB_USER}};"
+      - go run ./cmd/migration down
 
   run:
-    desc: Runs the main package
+    desc: Runs Snippetbox as a web application
     cmds:
       - go run ./cmd/web
 
