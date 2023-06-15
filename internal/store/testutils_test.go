@@ -10,27 +10,18 @@ import (
 	"github.com/google/uuid"
 )
 
-const superUserConnStr = "host=localhost port=5432 user=postgres password=postgres sslmode=disable dbname=postgres"
-
 func newTestDB(t *testing.T) (*sql.DB, string) {
 	randomSuffix := strings.Split(uuid.New().String(), "-")[0]
 	testDBName := fmt.Sprintf("snippetbox_test_%s", randomSuffix)
 
-	db, err := sql.Open("postgres", superUserConnStr)
-	if err != nil {
-		t.Fatalf("Failed to connect to database postgres. Err = %s", err)
-	}
-
-	_, err = db.Exec(fmt.Sprintf("CREATE DATABASE %s", testDBName))
+	db := getDBConn(t, "postgres", "postgres", "postgres")
+	_, err := db.Exec(fmt.Sprintf("CREATE DATABASE %s", testDBName))
 	if err != nil {
 		t.Fatalf("Failed to create database %s. Err = %s", testDBName, err)
 	}
+	db.Close()
 
-	db, err = sql.Open("postgres", fmt.Sprintf("host=localhost port=5432 user=postgres sslmode=disable dbname=%s", testDBName))
-	if err != nil || db.Ping() != nil {
-		t.Fatalf("Failed to connect to database %s", testDBName)
-	}
-
+	db = getDBConn(t, "postgres", "postgres", testDBName)
 	t.Logf("Connected to database %s", testDBName)
 	return db, testDBName
 }
@@ -58,12 +49,18 @@ func cleanupDB(t *testing.T, db *sql.DB) {
 }
 
 func dropDB(t *testing.T, dbName string) {
-	db, err := sql.Open("postgres", superUserConnStr)
-	if err != nil {
-		t.Fatalf("Failed to connect to database postgres. Err = %s", err)
-	}
-	_, err = db.Exec(fmt.Sprintf("DROP DATABASE %s", dbName))
+	db := getDBConn(t, "postgres", "postgres", "postgres")
+	_, err := db.Exec(fmt.Sprintf("DROP DATABASE %s", dbName))
 	if err != nil {
 		t.Fatalf("Failed to drop database %s. Err = %s", dbName, err)
 	}
+}
+
+func getDBConn(t *testing.T, user, password, dbname string) *sql.DB {
+	dsn := fmt.Sprintf("host=localhost port=5432 user=%s password=%s sslmode=disable dbname=%s", user, password, dbname)
+	db, _ := sql.Open("postgres", dsn)
+	if err := db.Ping(); err != nil {
+		t.Fatalf("Failed to connect to postgres with DSN = %s\nError = %s", dsn, err)
+	}
+	return db
 }
