@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -63,4 +64,13 @@ func getDBConn(t *testing.T, user, password, dbname string) *sql.DB {
 		t.Fatalf("Failed to connect to postgres with DSN = %s\nError = %s", dsn, err)
 	}
 	return db
+}
+
+func parseTime(t *testing.T, layout, value string) time.Time {
+	t.Helper()
+	tm, err := time.Parse(layout, value)
+	if err != nil {
+		t.Fatalf("An error occurred while parsing the time. Err = %s", err)
+	}
+	return tm
 }

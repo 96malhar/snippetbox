@@ -12,8 +12,8 @@ CREATE INDEX idx_snippets_created ON snippets (created);
 INSERT INTO snippets (title, content, created, expires)
 VALUES ('An old silent pond',
         E'An old silent pond...\nA frog jumps into the pond,\nsplash! Silence again.\n\n– Matsuo Bashō',
-        NOW(),
-        NOW() + INTERVAL '365 DAYS');
+        '2022-01-01 10:00:00',
+        '2023-01-01 10:00:00');
 
 --Create a `users` table.
 CREATE TABLE users
