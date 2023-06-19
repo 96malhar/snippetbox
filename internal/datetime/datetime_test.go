@@ -1,7 +1,6 @@
 package datetime
 
 import (
-	"reflect"
 	"testing"
 	"time"
 )
@@ -29,7 +28,7 @@ func TestDateTimeHandler_GetCurrentTimeUTC(t *testing.T) {
 				return tt.setTime
 			}
 			h := &Handler{}
-			if got := h.GetCurrentTimeUTC(); !reflect.DeepEqual(got, tt.want) {
+			if got := h.GetCurrentTimeUTC(); !got.Equal(tt.want) {
 				t.Errorf("GetCurrentTimeUTC() = %v, want %v", got, tt.want)
 			}
 		})

@@ -1,7 +1,5 @@
 version: '3'
 
-dotenv: [ '.env' ]
-
 tasks:
   start-postgres:
     desc: Start a Postgres server via docker compose
@@ -34,7 +32,14 @@ tasks:
     cmds:
       - go run ./cmd/web
 
+  unit-test:
+    desc: Runs only unit tests
+    cmds:
+      - go test ./... -count=1 {{.CLI_ARGS}}
+
   test:
     desc: Runs all tests
+    env:
+      INTEGRATION: true
     cmds:
-      - go test ./... {{.CLI_ARGS}}
+      - go test ./... -count=1 {{.CLI_ARGS}}

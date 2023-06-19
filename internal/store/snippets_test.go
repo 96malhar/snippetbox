@@ -1,12 +1,14 @@
 package store
 
 import (
-	dtmock "github.com/96malhar/snippetbox/internal/datetime/mocks"
+	"github.com/96malhar/snippetbox/internal/datetime/mocks"
+	"github.com/96malhar/snippetbox/internal/testutils"
 	"testing"
 	"time"
 )
 
 func TestSnippetStore_Get(t *testing.T) {
+	testutils.RunAsIntegTest(t)
 	tests := []struct {
 		name            string
 		id              int
@@ -69,7 +71,7 @@ func TestSnippetStore_Get(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewSnippetStore(db)
 			if tt.mockCurrentTime != "" {
-				s.datetimeHandler = dtmock.NewMockDateTimeHandler(parseTime(t, time.RFC3339, tt.mockCurrentTime))
+				s.datetimeHandler = mocks.NewMockDateTimeHandler(parseTime(t, time.RFC3339, tt.mockCurrentTime))
 			}
 
 			gotSnippet, err := s.Get(tt.id)
@@ -87,6 +89,7 @@ func TestSnippetStore_Get(t *testing.T) {
 }
 
 func TestSnippetStore_Latest(t *testing.T) {
+	testutils.RunAsIntegTest(t)
 	testcases := []struct {
 		name            string
 		mockCurrentTime string
@@ -129,7 +132,7 @@ func TestSnippetStore_Latest(t *testing.T) {
 
 			s := NewSnippetStore(db)
 			if tt.mockCurrentTime != "" {
-				s.datetimeHandler = dtmock.NewMockDateTimeHandler(parseTime(t, time.RFC3339, tt.mockCurrentTime))
+				s.datetimeHandler = mocks.NewMockDateTimeHandler(parseTime(t, time.RFC3339, tt.mockCurrentTime))
 			}
 
 			gotSnippets, err := s.Latest()
@@ -149,6 +152,7 @@ func TestSnippetStore_Latest(t *testing.T) {
 }
 
 func TestSnippetStore_Insert(t *testing.T) {
+	testutils.RunAsIntegTest(t)
 	db, testDbName := newTestDB(t)
 	setupDB(t, db)
 	t.Cleanup(func() {
@@ -158,7 +162,7 @@ func TestSnippetStore_Insert(t *testing.T) {
 
 	s := NewSnippetStore(db)
 	mockCurrTime := time.Date(2022, 1, 1, 10, 0, 0, 0, time.UTC)
-	s.datetimeHandler = dtmock.NewMockDateTimeHandler(mockCurrTime)
+	s.datetimeHandler = mocks.NewMockDateTimeHandler(mockCurrTime)
 
 	id, err := s.Insert("Snippet 3 Title", "Snippet 3 content.", 10)
 
