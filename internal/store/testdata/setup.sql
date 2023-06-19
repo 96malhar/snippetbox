@@ -10,10 +10,16 @@ CREATE TABLE snippets
 CREATE INDEX idx_snippets_created ON snippets (created);
 
 INSERT INTO snippets (title, content, created, expires)
-VALUES ('An old silent pond',
-        E'An old silent pond...\nA frog jumps into the pond,\nsplash! Silence again.\n\n– Matsuo Bashō',
+VALUES ('Snippet 1 Title',
+        'Snippet 1 content.',
         '2022-01-01 10:00:00',
         '2023-01-01 10:00:00');
+
+INSERT INTO snippets (title, content, created, expires)
+VALUES ('Snippet 2 Title',
+        'Snippet 2 content.',
+        '2022-02-01 10:00:00',
+        '2023-02-01 10:00:00');
 
 --Create a `users` table.
 CREATE TABLE users

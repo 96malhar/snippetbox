@@ -51,6 +51,7 @@ func cleanupDB(t *testing.T, db *sql.DB) {
 
 func dropDB(t *testing.T, dbName string) {
 	db := getDBConn(t, "postgres", "postgres", "postgres")
+	defer db.Close()
 	_, err := db.Exec(fmt.Sprintf("DROP DATABASE %s", dbName))
 	if err != nil {
 		t.Fatalf("Failed to drop database %s. Err = %s", dbName, err)
