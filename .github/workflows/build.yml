@@ -4,6 +4,7 @@ on: [ push, pull_request ]
 
 jobs:
   run-tests:
+    name: Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -13,10 +14,8 @@ jobs:
         with:
           go-version: '1.20.x'
 
-      - name: Install Dependencies
-        run: |
-          go mod tidy
-          go get ./...
+      - name: Build
+        run: go build -v ./...
 
       - name: Install Task
         run: |
@@ -26,9 +25,8 @@ jobs:
       - name: Setup gotestfmt
         uses: gotesttools/gotestfmt-action@v2
 
-      - name: Run All Tests
-        run: task test-coverage -- -json -v 2>&1 | gotestfmt -hide "successful-tests, empty-packages"
-
+      - name: Test
+        run: task test-gotestfmt
 
     services:
       postgres:
