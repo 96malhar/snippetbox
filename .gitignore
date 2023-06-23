@@ -24,4 +24,6 @@
 
 # Go workspace file
 go.work
+
+# TLS certs
 tls/

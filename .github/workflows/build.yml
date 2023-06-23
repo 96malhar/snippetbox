@@ -1,4 +1,4 @@
-name: Run All Tests
+name: Build
 
 on: [ push, pull_request ]
 
@@ -14,18 +14,20 @@ jobs:
           go-version: '1.20.x'
 
       - name: Install Dependencies
-        run: go get ./...
+        run: |
+          go mod tidy
+          go get ./...
 
       - name: Install Task
         run: |
           sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b $HOME/bin
           echo "$HOME/bin" >> $GITHUB_PATH
 
-      - name: Set up gotestfmt
+      - name: Setup gotestfmt
         uses: gotesttools/gotestfmt-action@v2
 
       - name: Run All Tests
-        run: task test -- -json -v 2>&1 | gotestfmt -hide "successful-tests, empty-packages"
+        run: task test-coverage -- -json -v 2>&1 | gotestfmt -hide "successful-tests, empty-packages"
 
 
     services:

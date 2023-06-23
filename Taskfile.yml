@@ -43,3 +43,10 @@ tasks:
       INTEGRATION: true
     cmds:
       - go test ./... {{.CLI_ARGS}}
+
+  test-coverage:
+    desc: Runs all tests with code coverage
+    env:
+      INTEGRATION: true
+    cmds:
+      - go test --coverprofile=coverage.out ./... {{.CLI_ARGS}}
