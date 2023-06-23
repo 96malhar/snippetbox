@@ -25,4 +25,4 @@ jobs:
         uses: gotesttools/gotestfmt-action@v2
 
       - name: Run Unit Tests
-        run: task unit-test -- -json -v 2>&1 | gotestfmt
+        run: task unit-test -- -json -v 2>&1 | gotestfmt -hide "successful-tests, empty-packages"
