@@ -1,0 +1,28 @@
+name: Run Unit Tests
+
+on: [ push, pull_request ]
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.20.x'
+
+      - name: Install Dependencies
+        run: go get ./...
+
+      - name: Install Task
+        run: |
+          sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b $HOME/bin
+          echo "$HOME/bin" >> $GITHUB_PATH
+
+      - name: Set up gotestfmt
+        uses: gotesttools/gotestfmt-action@v2
+
+      - name: Run Unit Tests
+        run: task unit-test -- -json -v 2>&1 | gotestfmt

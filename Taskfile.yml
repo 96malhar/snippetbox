@@ -35,11 +35,11 @@ tasks:
   unit-test:
     desc: Runs only unit tests
     cmds:
-      - go test ./... -count=1 {{.CLI_ARGS}}
+      - go test ./... {{.CLI_ARGS}}
 
   test:
     desc: Runs all tests
     env:
       INTEGRATION: true
     cmds:
-      - go test ./... -count=1 {{.CLI_ARGS}}
+      - go test ./... {{.CLI_ARGS}}

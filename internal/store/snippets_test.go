@@ -195,10 +195,10 @@ func checkSnippet(t *testing.T, gotSnippet, wantSnippet *Snippet) {
 	if gotSnippet.Content != wantSnippet.Content {
 		t.Errorf("got Title = %s; want Title = %s", gotSnippet.Content, wantSnippet.Content)
 	}
-	if gotSnippet.Created != wantSnippet.Created {
+	if !gotSnippet.Created.Equal(wantSnippet.Created) {
 		t.Errorf("got Created = %v; want Created = %v", gotSnippet.Created, wantSnippet.Created)
 	}
-	if gotSnippet.Expires != wantSnippet.Expires {
+	if !gotSnippet.Expires.Equal(wantSnippet.Expires) {
 		t.Errorf("got Expires = %v; want Expires = %v", gotSnippet.Expires, wantSnippet.Expires)
 	}
 }
