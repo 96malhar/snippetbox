@@ -32,27 +32,13 @@ tasks:
     cmds:
       - go run ./cmd/web
 
-  unit-test:
+  tests:
     desc: Runs only unit tests
     cmds:
-      - go test ./... {{.CLI_ARGS}}
+      - go test -json -v --coverprofile=coverage.out ./... 2>&1 | gotestfmt -hide "successful-tests, empty-packages"
 
-  test:
+  all-tests:
     desc: Runs all tests
-    env:
-      INTEGRATION: true
-    cmds:
-      - go test ./... {{.CLI_ARGS}}
-
-  test-coverage:
-    desc: Runs all tests with code coverage
-    env:
-      INTEGRATION: true
-    cmds:
-      - go test --coverprofile=coverage.out ./... {{.CLI_ARGS}}
-
-  test-gotestfmt:
-    desc: Runs all tests and formats the output
     env:
       INTEGRATION: true
     cmds:
