@@ -1,6 +1,7 @@
 package validation
 
 import (
+	"github.com/96malhar/snippetbox/internal/assert"
 	"testing"
 )
 
@@ -129,6 +130,72 @@ func TestPermittedValue(t *testing.T) {
 			got := PermittedValue(tc.input, tc.permittedValues...)
 			if got != tc.want {
 				t.Errorf("Got = %v; Want = %v", got, tc.want)
+			}
+		})
+	}
+}
+
+func TestValidator_CheckField(t *testing.T) {
+	v := &Validator{}
+	v.initialize()
+
+	v.CheckField(true, "fieldKey1", "errorMessage1")
+	v.CheckField(false, "fieldKey2", "errorMessage2")
+
+	if _, ok := v.FieldErrors["fieldKey1"]; ok {
+		t.Errorf("fieldKey1 cannot exist inside the FieldErrors map")
+	}
+	if v.FieldErrors["fieldKey2"] != "errorMessage2" {
+		t.Errorf("v.FieldErrors[fieldKey2] = %s; want = errorMessage2", v.FieldErrors["fieldKey2"])
+	}
+}
+
+func TestValidator_CheckNonField(t *testing.T) {
+	v := &Validator{}
+	v.initialize()
+
+	v.CheckNonField(true, "errorMessage1")
+	v.CheckNonField(false, "errorMessage2")
+
+	assert.SliceDoesNotContain(t, v.NonFieldErrors, "errorMessage1")
+	assert.SliceContains(t, v.NonFieldErrors, "errorMessage2")
+}
+
+func TestValidator_Valid(t *testing.T) {
+	testcases := []struct {
+		name      string
+		validator *Validator
+		wantValid bool
+	}{
+		{
+			name:      "Is Valid",
+			validator: &Validator{},
+			wantValid: true,
+		},
+		{
+			name: "Not valid with field errors",
+			validator: &Validator{
+				FieldErrors: map[string]string{
+					"key1": "Error1",
+					"Key2": "Error2",
+				},
+			},
+			wantValid: false,
+		},
+		{
+			name: "Not valid with non-field errors",
+			validator: &Validator{
+				NonFieldErrors: []string{"Error1", "Error2"},
+			},
+			wantValid: false,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			gotValid := tc.validator.Valid()
+			if gotValid != tc.wantValid {
+				t.Errorf("v.Valid() = %v; want = %v", gotValid, tc.wantValid)
 			}
 		})
 	}

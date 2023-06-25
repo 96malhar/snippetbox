@@ -20,3 +20,23 @@ func StringContains(t *testing.T, actual, expectedSubstring string) {
 		t.Errorf("got: %q; expected to contain: %q", actual, expectedSubstring)
 	}
 }
+
+func SliceContains(t *testing.T, sl []string, target string) {
+	t.Helper()
+	for _, val := range sl {
+		if val == target {
+			return
+		}
+	}
+	t.Errorf("The slice does not contain %s", target)
+
+}
+
+func SliceDoesNotContain(t *testing.T, sl []string, target string) {
+	t.Helper()
+	for _, val := range sl {
+		if val == target {
+			t.Errorf("The slice contains %s", target)
+		}
+	}
+}
