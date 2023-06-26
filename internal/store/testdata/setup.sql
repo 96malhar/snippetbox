@@ -31,3 +31,10 @@ CREATE TABLE users
     created         TIMESTAMP WITH TIME ZONE                     NOT NULL,
     CONSTRAINT users_uc_email UNIQUE (email)
 );
+
+INSERT INTO users (name, email, hashed_password, created)
+VALUES ('John',
+        'john@example.com',
+           -- Hello, World! as password
+        '$2a$04$iQ07aWdTTLrEcem61mMEeuguBE994i.4qA5F90EhsPi9UQWzTBnyO',
+        '2023-02-01 10:00:00');
