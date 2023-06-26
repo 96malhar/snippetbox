@@ -2,12 +2,10 @@ package datetime
 
 import "time"
 
-var utcNow = func() time.Time {
-	return time.Now().UTC()
-}
+var now = time.Now
 
 type Handler struct{}
 
 func (h *Handler) GetCurrentTimeUTC() time.Time {
-	return utcNow().Round(time.Second)
+	return now().UTC().Round(time.Second)
 }

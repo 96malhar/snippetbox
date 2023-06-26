@@ -24,7 +24,7 @@ func TestDateTimeHandler_GetCurrentTimeUTC(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utcNow = func() time.Time {
+			now = func() time.Time {
 				return tt.setTime
 			}
 			h := &Handler{}
