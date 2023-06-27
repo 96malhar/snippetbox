@@ -22,6 +22,8 @@ func TestPing(t *testing.T) {
 
 func TestHome(t *testing.T) {
 	app := newTestApplication(t)
+	app.snippetStore.Insert("Snippet 1", "Content for snippet 1...", 10)
+	app.snippetStore.Insert("Snippet 2", "Content for snippet 2...", 5)
 
 	ts := newTestServer(t, app.routes())
 	defer ts.Close()
@@ -33,6 +35,8 @@ func TestHome(t *testing.T) {
 	assert.Equal(t, resp.StatusCode, http.StatusOK)
 	titleTag := "<title>Home - Snippetbox</title>"
 	assert.StringContains(t, body, titleTag)
+	assert.StringContains(t, body, "Snippet 1")
+	assert.StringContains(t, body, "Snippet 2")
 }
 
 func TestSnippetView(t *testing.T) {

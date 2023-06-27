@@ -11,6 +11,7 @@ import (
 	"net/http/cookiejar"
 	"net/http/httptest"
 	"net/url"
+	"strings"
 	"testing"
 	"time"
 )
@@ -100,4 +101,20 @@ func getString(t *testing.T, r io.Reader) string {
 
 	body = bytes.TrimSpace(body)
 	return string(body)
+}
+
+func createPostRequest(t *testing.T, urlString string, data map[string]string) *http.Request {
+	t.Helper()
+	urlValues := url.Values{}
+	for key, val := range data {
+		urlValues.Add(key, val)
+	}
+
+	req, err := http.NewRequest(http.MethodPost, urlString, strings.NewReader(urlValues.Encode()))
+	if err != nil {
+		t.Errorf("An unexpected error occurrered while creating a POST request")
+		t.Errorf("Error = %v", err)
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	return req
 }
