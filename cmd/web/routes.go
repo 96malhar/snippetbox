@@ -26,6 +26,7 @@ func (app *application) routes() http.Handler {
 		r.Use(standardMiddlewares...)
 		r.Use(app.sessionManager.LoadAndSave, app.authenticate)
 		r.Get("/", app.home)
+		r.Get("/about", app.about)
 		r.Get("/snippet/view/{id}", app.snippetView)
 		r.Get("/user/signup", app.userSignup)
 		r.Post("/user/signup", app.userSignupPost)

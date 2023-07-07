@@ -39,6 +39,21 @@ func TestHome(t *testing.T) {
 	assert.StringContains(t, body, "Snippet 2")
 }
 
+func TestAbout(t *testing.T) {
+	app := newTestApplication(t)
+
+	ts := newTestServer(t, app.routes())
+	defer ts.Close()
+
+	resp := ts.get(t, "/about")
+	defer resp.Body.Close()
+	body := getString(t, resp.Body)
+
+	assert.Equal(t, resp.StatusCode, http.StatusOK)
+	titleTag := "<title>About - Snippetbox</title>"
+	assert.StringContains(t, body, titleTag)
+}
+
 func TestSnippetView(t *testing.T) {
 	app := newTestApplication(t)
 

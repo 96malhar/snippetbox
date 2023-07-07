@@ -46,7 +46,7 @@ func TestNewTemplateCache(t *testing.T) {
 	}
 
 	expectedCacheEntries := []string{
-		"create.tmpl", "home.tmpl", "login.tmpl", "signup.tmpl", "view.tmpl",
+		"create.tmpl", "home.tmpl", "login.tmpl", "signup.tmpl", "view.tmpl", "about.tmpl",
 	}
 
 	if len(cache) != len(expectedCacheEntries) {
