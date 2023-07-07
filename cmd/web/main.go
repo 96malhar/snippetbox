@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/tls"
 	"database/sql"
+	"flag"
 	"github.com/96malhar/snippetbox/internal/store"
 	"github.com/alexedwards/scs/postgresstore"
 	"github.com/alexedwards/scs/v2"
@@ -18,6 +19,14 @@ import (
 func main() {
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+
+	debug := flag.Bool("debug", false, "Enable debug mode")
+
+	flag.Parse()
+
+	if *debug {
+		infoLog.Print("Running in debug mode...")
+	}
 
 	if err := godotenv.Load(); err != nil {
 		errorLog.Fatal("Failed to load environment variables")
@@ -40,6 +49,7 @@ func main() {
 	sessionManager.Cookie.Secure = true
 
 	app := &application{
+		debug:          *debug,
 		errorLog:       errorLog,
 		infoLog:        infoLog,
 		snippetStore:   store.NewSnippetStore(db),
