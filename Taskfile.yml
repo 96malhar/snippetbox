@@ -37,6 +37,14 @@ tasks:
     cmds:
       - go test -json -v --coverprofile=coverage.out ./... 2>&1 | gotestfmt -hide "successful-tests, empty-packages"
 
+  smoke-test:
+    desc: Smoke tests the go web server
+    cmds:
+      - task: migrate-up
+      - task: generate-tls-cert
+      - ./smoke_test.sh
+      - task: migrate-down
+
   all-tests:
     desc: Runs all tests
     env:
