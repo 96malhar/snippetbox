@@ -75,3 +75,29 @@ func parseTime(t *testing.T, layout, value string) time.Time {
 	}
 	return tm
 }
+
+type userCheck func(t *testing.T, user *User)
+
+func userHasId(id int) userCheck {
+	return func(t *testing.T, user *User) {
+		if user.ID != id {
+			t.Errorf("got ID = %d; want ID = %d", user.ID, id)
+		}
+	}
+}
+
+func userHasName(name string) userCheck {
+	return func(t *testing.T, user *User) {
+		if user.Name != name {
+			t.Errorf("got name = %s; want name = %s", user.Name, name)
+		}
+	}
+}
+
+func userHasEmail(email string) userCheck {
+	return func(t *testing.T, user *User) {
+		if user.Email != email {
+			t.Errorf("got email = %s; want email = %s", user.Email, email)
+		}
+	}
+}

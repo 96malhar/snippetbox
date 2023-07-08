@@ -8,7 +8,6 @@ import (
 )
 
 func (app *application) routes() http.Handler {
-
 	r := chi.NewRouter()
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
 		app.notFound(w)
@@ -40,6 +39,7 @@ func (app *application) routes() http.Handler {
 		r.Get("/snippet/create", app.snippetCreate)
 		r.Post("/snippet/create", app.snippetCreatePost)
 		r.Post("/user/logout", app.userLogoutPost)
+		r.Get("/account/view", app.accountView)
 	})
 
 	return r

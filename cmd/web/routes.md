@@ -14,3 +14,4 @@ Table is created via - https://www.tablesgenerator.com/markdown_tables
 | POST   | /user/logout       | userLogoutPost    | Logout the user                                |
 | GET    | /static/*          | http.FileServer   | Serve a specific static file                   |
 | GET    | /ping              | ping              | Return a 200 OK response                       |
+| GET    | /account/view      | accountView       | Returns account details of the user            |

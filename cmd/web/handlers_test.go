@@ -410,6 +410,7 @@ func TestUserLoginPost(t *testing.T) {
 		formTag       = "<form action='/user/login' method='POST' novalidate>"
 	)
 
+	// Insert dummy user
 	app.userStore.Insert("validName", validEmail, validPassword)
 
 	tests := []struct {
@@ -506,5 +507,34 @@ func TestUserLogoutPost(t *testing.T) {
 		assert.Equal(t, resp.StatusCode, http.StatusSeeOther)
 		assert.Equal(t, resp.Header.Get("Location"), "/")
 	})
+}
 
+func TestAccountView(t *testing.T) {
+	app := newTestApplication(t)
+	ts := newTestServer(t, app.routes())
+	defer ts.Close()
+
+	t.Run("Unauthenticated", func(t *testing.T) {
+		resp := ts.get(t, "/account/view")
+		assert.Equal(t, resp.StatusCode, http.StatusSeeOther)
+		assert.Equal(t, resp.Header.Get("Location"), "/user/login")
+	})
+
+	t.Run("Authenticated", func(t *testing.T) {
+		// Insert a dummy user in the userStore
+		app.userStore.Insert("alice", "alice@example.com", "pa$$word")
+
+		// Make a POST /user/login request using the dummy user inserted above
+		form := url.Values{}
+		form.Add("email", "alice@example.com")
+		form.Add("password", "pa$$word")
+		ts.postForm(t, "/user/login", form)
+
+		// Then check that the authenticated user is shown the account view form.
+		resp := ts.get(t, "/account/view")
+		defer resp.Body.Close()
+		body := getString(t, resp.Body)
+		assert.Equal(t, resp.StatusCode, http.StatusOK)
+		assert.StringContains(t, body, "<title>Your Account - Snippetbox</title>")
+	})
 }

@@ -1,6 +1,9 @@
 package mocks
 
-import "github.com/96malhar/snippetbox/internal/store"
+import (
+	"github.com/96malhar/snippetbox/internal/store"
+	"time"
+)
 
 type MockUserStore struct {
 	users []*store.User
@@ -15,6 +18,7 @@ func (m *MockUserStore) Insert(name, email, password string) error {
 		Name:           name,
 		Email:          email,
 		HashedPassword: []byte(password),
+		Created:        time.Date(1996, time.April, 28, 3, 0, 0, 0, time.UTC),
 	}
 	m.users = append(m.users, &user)
 	return nil
@@ -36,6 +40,15 @@ func (m *MockUserStore) Exists(id int) (bool, error) {
 		}
 	}
 	return false, nil
+}
+
+func (m *MockUserStore) Get(id int) (*store.User, error) {
+	for _, usr := range m.users {
+		if usr.ID == id {
+			return usr, nil
+		}
+	}
+	return nil, store.ErrNoRecord
 }
 
 func (m *MockUserStore) generateId() int {

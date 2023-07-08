@@ -12,4 +12,5 @@ type userStoreInterface interface {
 	Insert(name, email, password string) error
 	Authenticate(email, password string) (int, error)
 	Exists(id int) (bool, error)
+	Get(id int) (*store.User, error)
 }

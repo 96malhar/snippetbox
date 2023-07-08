@@ -87,3 +87,20 @@ func (s *UserStore) Exists(id int) (bool, error) {
 	err := s.db.QueryRow(stmt, id).Scan(&exists)
 	return exists, err
 }
+
+func (s *UserStore) Get(id int) (*User, error) {
+	var user User
+
+	stmt := `SELECT id, name, email, created FROM users WHERE id = $1`
+
+	err := s.db.QueryRow(stmt, id).Scan(&user.ID, &user.Name, &user.Email, &user.Created)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrNoRecord
+		} else {
+			return nil, err
+		}
+	}
+
+	return &user, nil
+}

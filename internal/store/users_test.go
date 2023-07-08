@@ -14,7 +14,7 @@ func TestUserStore_Exists(t *testing.T) {
 		wantErr error
 	}{
 		{
-			name: "Does exist",
+			name: "Exists",
 			id:   1,
 			want: true,
 		},
@@ -41,6 +41,48 @@ func TestUserStore_Exists(t *testing.T) {
 			}
 			if err != tc.wantErr {
 				t.Errorf("err = %v; wantErr = %v", err, tc.wantErr)
+			}
+		})
+	}
+}
+
+func TestUserStore_Get(t *testing.T) {
+	testutils.RunAsIntegTest(t)
+	testcases := []struct {
+		name    string
+		id      int
+		checks  []userCheck
+		wantErr error
+	}{
+		{
+			name:   "Exists",
+			id:     1,
+			checks: []userCheck{userHasId(1), userHasName("John"), userHasEmail("john@example.com")},
+		},
+		{
+			name:    "Does not exist",
+			id:      2,
+			wantErr: ErrNoRecord,
+		},
+	}
+
+	db, testDbName := newTestDB(t)
+	setupDB(t, db)
+	t.Cleanup(func() {
+		db.Close()
+		dropDB(t, testDbName)
+	})
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			s := NewUserStore(db)
+			gotUser, err := s.Get(tc.id)
+			if err != tc.wantErr {
+				t.Errorf("err = %v; wantErr = %v", err, tc.wantErr)
+			}
+
+			for _, check := range tc.checks {
+				check(t, gotUser)
 			}
 		})
 	}
