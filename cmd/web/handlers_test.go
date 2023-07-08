@@ -538,3 +538,27 @@ func TestAccountView(t *testing.T) {
 		assert.StringContains(t, body, "<title>Your Account - Snippetbox</title>")
 	})
 }
+
+func TestRedirectsAfterAuthenticating(t *testing.T) {
+	app := newTestApplication(t)
+	ts := newTestServer(t, app.routes())
+	defer ts.Close()
+
+	// since the user is unauthenticated, initial request to /account/view will be redirected to /user/login
+	resp := ts.get(t, "/account/view")
+	assert.Equal(t, resp.StatusCode, http.StatusSeeOther)
+	assert.Equal(t, resp.Header.Get("Location"), "/user/login")
+
+	// Insert a dummy user in the userStore
+	app.userStore.Insert("alice", "alice@example.com", "pa$$word")
+
+	// Make a POST /user/login request using the dummy user inserted above
+	form := url.Values{}
+	form.Add("email", "alice@example.com")
+	form.Add("password", "pa$$word")
+	resp = ts.postForm(t, "/user/login", form)
+
+	// A successful POST request should redirect to our original /account/view request
+	assert.Equal(t, resp.StatusCode, http.StatusSeeOther)
+	assert.Equal(t, resp.Header.Get("Location"), "/account/view")
+}

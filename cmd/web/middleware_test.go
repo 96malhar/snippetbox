@@ -83,8 +83,14 @@ func TestRequireAuthentication(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
+			app := newTestApplication(t)
+			reqCtx, err := app.sessionManager.Load(tc.requestCtx, "")
+			if err != nil {
+				t.Fatal(err)
+			}
+
 			rr := httptest.NewRecorder()
-			r, err := http.NewRequestWithContext(tc.requestCtx, http.MethodGet, "/", nil)
+			r, err := http.NewRequestWithContext(reqCtx, http.MethodGet, "/", nil)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -94,7 +100,6 @@ func TestRequireAuthentication(t *testing.T) {
 				w.Write([]byte("OK"))
 			})
 
-			app := newTestApplication(t)
 			app.requireAuthentication(next).ServeHTTP(rr, r)
 
 			result := rr.Result()
