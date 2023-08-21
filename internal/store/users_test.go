@@ -2,6 +2,7 @@ package store
 
 import (
 	"github.com/96malhar/snippetbox/internal/testutils"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -35,13 +36,10 @@ func TestUserStore_Exists(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			s := NewUserStore(db)
+
 			got, err := s.Exists(tc.id)
-			if got != tc.want {
-				t.Errorf("Exists(%d) = %v; want = %v", tc.id, got, tc.want)
-			}
-			if err != tc.wantErr {
-				t.Errorf("err = %v; wantErr = %v", err, tc.wantErr)
-			}
+			assert.ErrorIs(t, err, tc.wantErr)
+			assert.Equal(t, tc.want, got)
 		})
 	}
 }
@@ -77,9 +75,7 @@ func TestUserStore_Get(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			s := NewUserStore(db)
 			gotUser, err := s.Get(tc.id)
-			if err != tc.wantErr {
-				t.Errorf("err = %v; wantErr = %v", err, tc.wantErr)
-			}
+			assert.ErrorIs(t, err, tc.wantErr)
 
 			for _, check := range tc.checks {
 				check(t, gotUser)
@@ -129,13 +125,10 @@ func TestUserStore_Authenticate(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			s := NewUserStore(db)
+
 			gotId, err := s.Authenticate(tc.userEmail, tc.userPassword)
-			if gotId != tc.wantId {
-				t.Errorf("gotId = %d; wantId = %d", gotId, tc.wantId)
-			}
-			if err != tc.wantErr {
-				t.Errorf("err = %v; wantErr = %v", err, tc.wantErr)
-			}
+			assert.ErrorIs(t, err, tc.wantErr)
+			assert.Equal(t, tc.wantId, gotId)
 		})
 	}
 }
@@ -177,19 +170,15 @@ func TestUserStore_Insert(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			s := NewUserStore(db)
+
 			err := s.Insert(tc.userName, tc.userEmail, tc.userPassword)
-			if err != tc.wantErr {
-				t.Fatalf("Error = %v; Want Error = %v", err, tc.wantErr)
-			}
+
+			assert.ErrorIs(t, err, tc.wantErr)
 
 			if tc.wantId != 0 {
 				exists, err := s.Exists(tc.wantId)
-				if err != nil {
-					t.Errorf("Unexpected error = %v", err)
-				}
-				if exists != true {
-					t.Errorf("A user with ID = %d does not exist in the DB", tc.wantId)
-				}
+				assert.True(t, exists)
+				assert.NoError(t, err)
 			}
 		})
 	}

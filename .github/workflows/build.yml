@@ -1,4 +1,4 @@
-name: Build
+name: CI
 
 on:
   workflow_dispatch:
@@ -10,7 +10,7 @@ on:
 
 jobs:
   run-tests:
-    name: Test
+    name: Build and Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -35,10 +35,10 @@ jobs:
         uses: gotesttools/gotestfmt-action@v2
 
       - name: Smoke test
-        run: task smoke-test
+        run: task run:smoketest
 
       - name: Test
-        run: task all-tests
+        run: task run:tests:all
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
@@ -47,7 +47,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres
+        image: postgres:15-alpine
         env:
           POSTGRES_PASSWORD: postgres
         options: >-

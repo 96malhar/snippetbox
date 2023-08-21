@@ -2,7 +2,8 @@ package main
 
 import (
 	"context"
-	"github.com/96malhar/snippetbox/internal/assert"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"net/http"
 	"testing"
 	"time"
@@ -34,7 +35,7 @@ func TestHumanDate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			hd := humanDate(tt.tm)
-			assert.Equal(t, hd, tt.want)
+			assert.Equal(t, tt.want, hd)
 		})
 	}
 }
@@ -49,14 +50,10 @@ func TestNewTemplateCache(t *testing.T) {
 		"create.tmpl", "home.tmpl", "login.tmpl", "signup.tmpl", "view.tmpl", "about.tmpl", "account.tmpl",
 	}
 
-	if len(cache) != len(expectedCacheEntries) {
-		t.Errorf("len(cache) = %d; want = %d", len(cache), len(expectedCacheEntries))
-	}
+	assert.Equal(t, len(expectedCacheEntries), len(cache))
 
 	for _, key := range expectedCacheEntries {
-		if cache[key] == nil {
-			t.Errorf("Could not find template for key = %s", key)
-		}
+		assert.NotNilf(t, cache[key], "Could not find template for key '%s'", key)
 	}
 }
 
@@ -71,10 +68,8 @@ func TestNewTemplateData(t *testing.T) {
 	app.sessionManager.Put(ctx, "flash", flashMessage)
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "/", nil)
-	if err != nil {
-		t.Fatalf("Unexpected error while creating a new request; err = %v", err)
-	}
+	require.NoError(t, err)
 
 	td := app.newTemplateData(req)
-	assert.Equal(t, td.Flash, flashMessage)
+	assert.Equal(t, flashMessage, td.Flash)
 }

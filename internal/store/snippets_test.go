@@ -3,6 +3,8 @@ package store
 import (
 	"github.com/96malhar/snippetbox/internal/datetime/mocks"
 	"github.com/96malhar/snippetbox/internal/testutils"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
 )
@@ -75,15 +77,9 @@ func TestSnippetStore_Get(t *testing.T) {
 			}
 
 			gotSnippet, err := s.Get(tt.id)
-			if err != tt.wantErr {
-				t.Fatalf("Get() error = %v, wantErr = %v", err, tt.wantErr)
-			}
-			if tt.wantSnippet == nil && gotSnippet != nil {
-				t.Errorf("Expected nil snippet, got = %v", gotSnippet)
-			}
-			if tt.wantSnippet != nil {
-				checkSnippet(t, gotSnippet, tt.wantSnippet)
-			}
+
+			assert.ErrorIs(t, err, tt.wantErr)
+			assert.Equal(t, tt.wantSnippet, gotSnippet)
 		})
 	}
 }
@@ -136,16 +132,11 @@ func TestSnippetStore_Latest(t *testing.T) {
 			}
 
 			gotSnippets, err := s.Latest()
-			if err != nil {
-				t.Fatalf("Unexpected error = %v", err)
-			}
 
-			if len(gotSnippets) != len(tt.wantSnippets) {
-				t.Fatalf("len(gotSnippets)=%d; len(wantSnippets)=%d", len(gotSnippets), len(tt.wantSnippets))
-			}
-
+			require.NoError(t, err)
+			assert.Equal(t, len(tt.wantSnippets), len(gotSnippets))
 			for i := range tt.wantSnippets {
-				checkSnippet(t, gotSnippets[i], tt.wantSnippets[i])
+				assert.Equal(t, tt.wantSnippets[i], gotSnippets[i])
 			}
 		})
 	}
@@ -166,13 +157,8 @@ func TestSnippetStore_Insert(t *testing.T) {
 
 	id, err := s.Insert("Snippet 3 Title", "Snippet 3 content.", 10)
 
-	if err != nil {
-		t.Fatalf("Unexpected err = %v", err)
-	}
-
-	if id != 3 {
-		t.Errorf("got ID = %d; want ID = 3", id)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, 3, id)
 
 	wantSnippet := &Snippet{
 		ID:      3,
@@ -182,23 +168,5 @@ func TestSnippetStore_Insert(t *testing.T) {
 		Expires: mockCurrTime.Add(time.Hour * 24 * 10),
 	}
 	gotSnippet, _ := s.Get(3)
-	checkSnippet(t, gotSnippet, wantSnippet)
-}
-
-func checkSnippet(t *testing.T, gotSnippet, wantSnippet *Snippet) {
-	if gotSnippet.ID != wantSnippet.ID {
-		t.Errorf("got ID = %d; want ID = %d", gotSnippet.ID, wantSnippet.ID)
-	}
-	if gotSnippet.Title != wantSnippet.Title {
-		t.Errorf("got Title = %s; want Title = %s", gotSnippet.Title, wantSnippet.Title)
-	}
-	if gotSnippet.Content != wantSnippet.Content {
-		t.Errorf("got Title = %s; want Title = %s", gotSnippet.Content, wantSnippet.Content)
-	}
-	if !gotSnippet.Created.Equal(wantSnippet.Created) {
-		t.Errorf("got Created = %v; want Created = %v", gotSnippet.Created, wantSnippet.Created)
-	}
-	if !gotSnippet.Expires.Equal(wantSnippet.Expires) {
-		t.Errorf("got Expires = %v; want Expires = %v", gotSnippet.Expires, wantSnippet.Expires)
-	}
+	assert.Equal(t, wantSnippet, gotSnippet)
 }

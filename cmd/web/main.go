@@ -17,6 +17,32 @@ import (
 )
 
 func main() {
+	app := newApplication()
+
+	tlsConfig := &tls.Config{
+		CurvePreferences: []tls.CurveID{tls.X25519, tls.CurveP256},
+	}
+
+	serverPort := os.Getenv("SERVER_PORT")
+	if serverPort == "" {
+		serverPort = ":4000"
+	}
+	srv := &http.Server{
+		Addr:         serverPort,
+		ErrorLog:     app.errorLog,
+		Handler:      app.routes(),
+		TLSConfig:    tlsConfig,
+		IdleTimeout:  time.Minute,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+	}
+
+	app.infoLog.Printf("Starting server on %s", serverPort)
+	err := srv.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
+	app.errorLog.Fatal(err)
+}
+
+func newApplication() *application {
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
@@ -29,7 +55,7 @@ func main() {
 	}
 
 	if err := godotenv.Load(); err != nil {
-		errorLog.Fatal("Failed to load environment variables")
+		infoLog.Print("Failed to load environment variables")
 	}
 
 	db, err := openDB()
@@ -59,30 +85,15 @@ func main() {
 		sessionManager: sessionManager,
 	}
 
-	tlsConfig := &tls.Config{
-		CurvePreferences: []tls.CurveID{tls.X25519, tls.CurveP256},
-	}
-
-	serverPort := os.Getenv("SERVER_PORT")
-	srv := &http.Server{
-		Addr:         serverPort,
-		ErrorLog:     errorLog,
-		Handler:      app.routes(),
-		TLSConfig:    tlsConfig,
-		IdleTimeout:  time.Minute,
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 10 * time.Second,
-	}
-
-	infoLog.Printf("Starting server on %s", serverPort)
-	err = srv.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
-	errorLog.Fatal(err)
+	return app
 }
 
-// openDB() function wraps sql.Open() and returns a sql.DB connection pool
-// for a given driverName and DSN.
 func openDB() (*sql.DB, error) {
-	db, err := sql.Open("postgres", os.Getenv("DB_CONN"))
+	dsn := os.Getenv("SNIPPETBOX_DB_DSN")
+	if dsn == "" {
+		dsn = "postgresql://postgres:postgres@localhost:5432/postgres?sslmode=disable"
+	}
+	db, err := sql.Open("postgres", dsn)
 	if err != nil {
 		return nil, err
 	}

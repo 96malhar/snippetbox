@@ -1,13 +1,11 @@
 CREATE TABLE snippets
 (
-    id      INT Generated Always As IDENTITY PRIMARY KEY NOT NULL,
-    title   VARCHAR(100)                                 NOT NULL,
-    content TEXT                                         NOT NULL,
-    created TIMESTAMP WITH TIME ZONE                     NOT NULL,
-    expires TIMESTAMP WITH TIME ZONE                     NOT NULL
+    id      bigserial PRIMARY KEY,
+    title   VARCHAR(100)                NOT NULL,
+    content TEXT                        NOT NULL,
+    created timestamp(0) with time zone NOT NULL DEFAULT NOW(),
+    expires timestamp(0) with time zone NOT NULL DEFAULT NOW() + INTERVAL '365 DAYS'
 );
--- Add an index on the created column.
-CREATE INDEX idx_snippets_created ON snippets (created);
 
 INSERT INTO snippets (title, content, created, expires)
 VALUES ('Snippet 1 Title',
@@ -24,13 +22,14 @@ VALUES ('Snippet 2 Title',
 --Create a `users` table.
 CREATE TABLE users
 (
-    id              INT Generated Always As IDENTITY PRIMARY KEY NOT NULL,
-    name            VARCHAR(255)                                 NOT NULL,
-    email           VARCHAR(255)                                 NOT NULL,
-    hashed_password CHAR(60)                                     NOT NULL,
-    created         TIMESTAMP WITH TIME ZONE                     NOT NULL,
-    CONSTRAINT users_uc_email UNIQUE (email)
+    id              bigserial PRIMARY KEY,
+    name            varchar(255)                NOT NULL,
+    email           varchar(255)                NOT NULL,
+    hashed_password char(60)                    NOT NULL,
+    created         timestamp(0) with time zone NOT NULL DEFAULT NOW()
 );
+
+ALTER TABLE users ADD CONSTRAINT users_uc_email UNIQUE (email);
 
 INSERT INTO users (name, email, hashed_password, created)
 VALUES ('John',

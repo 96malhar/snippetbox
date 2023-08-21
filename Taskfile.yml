@@ -1,51 +1,71 @@
 version: '3'
 
+dotenv: ['.env']
+
 tasks:
-  start-postgres:
+  postgres:start:
     desc: Start a Postgres server via docker compose
     cmds:
       - docker compose up -d
 
-  stop-postgres:
+  postgres:stop:
     desc: Stops Postgres server via docker compose
     cmds:
       - docker compose down
 
-  migrate-up:
-    desc: Sets up the database to run Snippetbox as a web app
+  db:setup:
+    desc: Setup the database and the database user used by the snippetbox app
     cmds:
-      - go run ./cmd/migration up
+      - go run ./cmd/db setup
 
-  migrate-down:
-    desc: Deletes the database used by Snippetbox
+  db:teardown:
+    desc: Teardown the database and the database user used by the snippetbox app
     cmds:
-      - go run ./cmd/migration down
+      - go run ./cmd/db teardown
 
-  generate-tls-cert:
+  db:migrations:new:
+    desc: Creates a new migration file
+    cmds:
+      - echo "Creating migration files for {{.CLI_ARGS}}..."
+      - migrate create -seq -ext=.sql -dir=./migrations {{.CLI_ARGS}}
+
+  db:migrations:up:
+    desc: Runs up migrations
+    cmds:
+      - echo "Running up migrations..."
+      - migrate -path ./migrations -database ${SNIPPETBOX_DB_DSN} up
+
+  db:migrations:down:
+    desc: Runs down migrations
+    cmds:
+      - echo "Running down migrations..."
+      - migrate -path ./migrations -database ${SNIPPETBOX_DB_DSN} down
+
+  tls-cert:generate:
     dir: ./tls
     desc: Generates TLS certificate to run Snippetbox on HTTPS
     cmds:
       - go run {{.GOROOT}}/src/crypto/tls/generate_cert.go --rsa-bits=2048 --host=localhost
 
-  run:
+  run:app:
     desc: Runs Snippetbox as a web application
     cmds:
       - go run ./cmd/web {{.CLI_ARGS}}
 
-  tests:
+  run:tests:unit:
     desc: Runs only unit tests
     cmds:
       - go test -json -v --coverprofile=coverage.out ./... 2>&1 | gotestfmt -hide "successful-tests, empty-packages"
 
-  smoke-test:
-    desc: Smoke tests the go web server
+  run:smoketest:
+    desc: Run the smoke test
     cmds:
-      - task: migrate-up
-      - task: generate-tls-cert
+      - defer: { task: db:teardown }
+      - task: db:setup
+      - task: db:migrations:up
       - ./smoke_test.sh
-      - task: migrate-down
 
-  all-tests:
+  run:tests:all:
     desc: Runs all tests
     env:
       INTEGRATION: true

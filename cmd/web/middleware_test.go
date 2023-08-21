@@ -5,13 +5,13 @@ import (
 	"context"
 	"github.com/96malhar/snippetbox/internal/store"
 	"github.com/96malhar/snippetbox/internal/store/mocks"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
 	"testing"
-
-	"github.com/96malhar/snippetbox/internal/assert"
 )
 
 func TestSecureHeaders(t *testing.T) {
@@ -40,7 +40,7 @@ func TestSecureHeaders(t *testing.T) {
 	}
 
 	for header, value := range expectedHeaderValues {
-		assert.Equal(t, rs.Header.Get(header), value)
+		assert.Equal(t, value, rs.Header.Get(header))
 	}
 
 	// Check that the middleware has correctly called the next handler in line
@@ -49,11 +49,9 @@ func TestSecureHeaders(t *testing.T) {
 
 	defer rs.Body.Close()
 	body, err := io.ReadAll(rs.Body)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 	body = bytes.TrimSpace(body)
-	assert.Equal(t, string(body), "OK")
+	assert.Equal(t, "OK", string(body))
 }
 
 func TestRequireAuthentication(t *testing.T) {
@@ -85,15 +83,11 @@ func TestRequireAuthentication(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			app := newTestApplication(t)
 			reqCtx, err := app.sessionManager.Load(tc.requestCtx, "")
-			if err != nil {
-				t.Fatal(err)
-			}
+			require.NoError(t, err)
 
 			rr := httptest.NewRecorder()
 			r, err := http.NewRequestWithContext(reqCtx, http.MethodGet, "/", nil)
-			if err != nil {
-				t.Fatal(err)
-			}
+			require.NoError(t, err)
 
 			// Create a mock HTTP handler that we can pass to our requireAuthentication middleware
 			next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -103,10 +97,10 @@ func TestRequireAuthentication(t *testing.T) {
 			app.requireAuthentication(next).ServeHTTP(rr, r)
 
 			result := rr.Result()
-			assert.Equal(t, result.StatusCode, tc.wantStatus)
+			assert.Equal(t, tc.wantStatus, result.StatusCode)
 
 			for key, value := range tc.wantHeaders {
-				assert.Equal(t, result.Header.Get(key), value)
+				assert.Equal(t, value, result.Header.Get(key))
 			}
 		})
 	}
@@ -152,16 +146,12 @@ func TestAuthenticate(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			rr := httptest.NewRecorder()
 			r, err := http.NewRequestWithContext(reqCtx, http.MethodGet, "/", nil)
-			if err != nil {
-				t.Fatal(err)
-			}
+			require.NoError(t, err)
 
 			app.userStore = tc.userStore
 			app.authenticate(next).ServeHTTP(rr, r)
 			isAuthenticated := rr.Result().Header.Get("IsAuthenticated")
-			if isAuthenticated != tc.wantIsAuthenticated {
-				t.Errorf("isAuthenticated = %s; want = %s", isAuthenticated, tc.wantIsAuthenticated)
-			}
+			assert.Equal(t, tc.wantIsAuthenticated, isAuthenticated)
 		})
 	}
 }

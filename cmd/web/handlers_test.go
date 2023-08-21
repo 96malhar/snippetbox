@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/96malhar/snippetbox/internal/assert"
+	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/url"
 	"testing"
@@ -16,8 +16,8 @@ func TestPing(t *testing.T) {
 	resp := ts.get(t, "/ping")
 	defer resp.Body.Close()
 
-	assert.Equal(t, resp.StatusCode, http.StatusOK)
-	assert.Equal(t, getString(t, resp.Body), "OK")
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Equal(t, "OK", getString(t, resp.Body))
 }
 
 func TestHome(t *testing.T) {
@@ -34,9 +34,9 @@ func TestHome(t *testing.T) {
 
 	assert.Equal(t, resp.StatusCode, http.StatusOK)
 	titleTag := "<title>Home - Snippetbox</title>"
-	assert.StringContains(t, body, titleTag)
-	assert.StringContains(t, body, "Snippet 1")
-	assert.StringContains(t, body, "Snippet 2")
+	assert.Contains(t, body, titleTag)
+	assert.Contains(t, body, "Snippet 1")
+	assert.Contains(t, body, "Snippet 2")
 }
 
 func TestAbout(t *testing.T) {
@@ -49,9 +49,9 @@ func TestAbout(t *testing.T) {
 	defer resp.Body.Close()
 	body := getString(t, resp.Body)
 
-	assert.Equal(t, resp.StatusCode, http.StatusOK)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
 	titleTag := "<title>About - Snippetbox</title>"
-	assert.StringContains(t, body, titleTag)
+	assert.Contains(t, body, titleTag)
 }
 
 func TestSnippetView(t *testing.T) {
@@ -113,10 +113,10 @@ func TestSnippetView(t *testing.T) {
 			resp := ts.get(t, tc.urlPath)
 			defer resp.Body.Close()
 
-			assert.Equal(t, resp.StatusCode, tc.wantCode)
+			assert.Equal(t, tc.wantCode, resp.StatusCode)
 
 			if tc.wantBody != "" {
-				assert.StringContains(t, getString(t, resp.Body), tc.wantBody)
+				assert.Contains(t, getString(t, resp.Body), tc.wantBody)
 			}
 		})
 	}
@@ -129,8 +129,8 @@ func TestSnippetCreate(t *testing.T) {
 
 	t.Run("Unauthenticated", func(t *testing.T) {
 		resp := ts.get(t, "/snippet/create")
-		assert.Equal(t, resp.StatusCode, http.StatusSeeOther)
-		assert.Equal(t, resp.Header.Get("Location"), "/user/login")
+		assert.Equal(t, http.StatusSeeOther, resp.StatusCode)
+		assert.Equal(t, "/user/login", resp.Header.Get("Location"))
 	})
 
 	t.Run("Authenticated", func(t *testing.T) {
@@ -147,18 +147,18 @@ func TestSnippetCreate(t *testing.T) {
 		resp := ts.get(t, "/snippet/create")
 		defer resp.Body.Close()
 		body := getString(t, resp.Body)
-		assert.Equal(t, resp.StatusCode, http.StatusOK)
-		assert.StringContains(t, body, "<form action='/snippet/create' method='POST'>")
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Contains(t, body, "<form action='/snippet/create' method='POST'>")
 
 		// logout the user
 		resp = ts.postForm(t, "/user/logout", nil)
-		assert.Equal(t, resp.StatusCode, http.StatusSeeOther)
-		assert.Equal(t, resp.Header.Get("Location"), "/")
+		assert.Equal(t, http.StatusSeeOther, resp.StatusCode)
+		assert.Equal(t, "/", resp.Header.Get("Location"))
 
 		// Try getting /snippet/create again - this should fail
 		resp = ts.get(t, "/snippet/create")
-		assert.Equal(t, resp.StatusCode, http.StatusSeeOther)
-		assert.Equal(t, resp.Header.Get("Location"), "/user/login")
+		assert.Equal(t, http.StatusSeeOther, resp.StatusCode)
+		assert.Equal(t, "/user/login", resp.Header.Get("Location"))
 	})
 }
 
@@ -266,11 +266,11 @@ func TestUserSignup(t *testing.T) {
 	defer resp.Body.Close()
 
 	body := getString(t, resp.Body)
-	assert.Equal(t, resp.StatusCode, http.StatusOK)
-	assert.StringContains(t, body, wantTitle)
-	assert.StringContains(t, body, wantNameInput)
-	assert.StringContains(t, body, wantEmailInput)
-	assert.StringContains(t, body, wantPasswordInput)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Contains(t, body, wantTitle)
+	assert.Contains(t, body, wantNameInput)
+	assert.Contains(t, body, wantEmailInput)
+	assert.Contains(t, body, wantPasswordInput)
 }
 
 func TestUserSignupPost(t *testing.T) {
@@ -364,13 +364,13 @@ func TestUserSignupPost(t *testing.T) {
 			resp := ts.postForm(t, "/user/signup", form)
 			defer resp.Body.Close()
 			body := getString(t, resp.Body)
-			assert.Equal(t, resp.StatusCode, tt.wantCode)
+			assert.Equal(t, tt.wantCode, resp.StatusCode)
 			if tt.wantFormTag != "" {
-				assert.StringContains(t, body, tt.wantFormTag)
+				assert.Contains(t, body, tt.wantFormTag)
 			}
 
 			for key, value := range tt.wantHeaders {
-				assert.Equal(t, resp.Header.Get(key), value)
+				assert.Equal(t, value, resp.Header.Get(key))
 			}
 		})
 	}
@@ -392,11 +392,11 @@ func TestUserLogin(t *testing.T) {
 	defer resp.Body.Close()
 
 	body := getString(t, resp.Body)
-	assert.Equal(t, resp.StatusCode, http.StatusOK)
-	assert.StringContains(t, body, wantFormTag)
-	assert.StringContains(t, body, wantTitle)
-	assert.StringContains(t, body, wantEmailInput)
-	assert.StringContains(t, body, wantPasswordInput)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Contains(t, body, wantFormTag)
+	assert.Contains(t, body, wantTitle)
+	assert.Contains(t, body, wantEmailInput)
+	assert.Contains(t, body, wantPasswordInput)
 }
 
 func TestUserLoginPost(t *testing.T) {
@@ -469,13 +469,13 @@ func TestUserLoginPost(t *testing.T) {
 			resp := ts.postForm(t, "/user/login", form)
 			defer resp.Body.Close()
 
-			assert.Equal(t, resp.StatusCode, tc.wantCode)
+			assert.Equal(t, tc.wantCode, resp.StatusCode)
 			if tc.wantFormTag != "" {
-				assert.StringContains(t, getString(t, resp.Body), tc.wantFormTag)
+				assert.Contains(t, getString(t, resp.Body), tc.wantFormTag)
 			}
 
 			for key, value := range tc.wantHeaders {
-				assert.Equal(t, resp.Header.Get(key), value)
+				assert.Equal(t, value, resp.Header.Get(key))
 			}
 		})
 	}
@@ -488,8 +488,8 @@ func TestUserLogoutPost(t *testing.T) {
 
 	t.Run("Unauthenticated", func(t *testing.T) {
 		resp := ts.postForm(t, "/user/logout", nil)
-		assert.Equal(t, resp.StatusCode, http.StatusSeeOther)
-		assert.Equal(t, resp.Header.Get("Location"), "/user/login")
+		assert.Equal(t, http.StatusSeeOther, resp.StatusCode)
+		assert.Equal(t, "/user/login", resp.Header.Get("Location"))
 	})
 
 	t.Run("Authenticated", func(t *testing.T) {
@@ -504,8 +504,8 @@ func TestUserLogoutPost(t *testing.T) {
 
 		// Then check that the authenticated user is logged out successfully
 		resp := ts.postForm(t, "/user/logout", nil)
-		assert.Equal(t, resp.StatusCode, http.StatusSeeOther)
-		assert.Equal(t, resp.Header.Get("Location"), "/")
+		assert.Equal(t, http.StatusSeeOther, resp.StatusCode)
+		assert.Equal(t, "/", resp.Header.Get("Location"))
 	})
 }
 
@@ -516,7 +516,7 @@ func TestAccountView(t *testing.T) {
 
 	t.Run("Unauthenticated", func(t *testing.T) {
 		resp := ts.get(t, "/account/view")
-		assert.Equal(t, resp.StatusCode, http.StatusSeeOther)
+		assert.Equal(t, http.StatusSeeOther, resp.StatusCode)
 		assert.Equal(t, resp.Header.Get("Location"), "/user/login")
 	})
 
@@ -534,8 +534,8 @@ func TestAccountView(t *testing.T) {
 		resp := ts.get(t, "/account/view")
 		defer resp.Body.Close()
 		body := getString(t, resp.Body)
-		assert.Equal(t, resp.StatusCode, http.StatusOK)
-		assert.StringContains(t, body, "<title>Your Account - Snippetbox</title>")
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Contains(t, body, "<title>Your Account - Snippetbox</title>")
 	})
 }
 
@@ -559,6 +559,6 @@ func TestRedirectsAfterAuthenticating(t *testing.T) {
 	resp = ts.postForm(t, "/user/login", form)
 
 	// A successful POST request should redirect to our original /account/view request
-	assert.Equal(t, resp.StatusCode, http.StatusSeeOther)
-	assert.Equal(t, resp.Header.Get("Location"), "/account/view")
+	assert.Equal(t, http.StatusSeeOther, resp.StatusCode)
+	assert.Equal(t, "/account/view", resp.Header.Get("Location"))
 }

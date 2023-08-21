@@ -3,11 +3,10 @@ package main
 import (
 	"context"
 	"errors"
-	"github.com/google/go-cmp/cmp"
+	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 )
 
@@ -17,9 +16,7 @@ func TestApplication_ServerError(t *testing.T) {
 	app.serverError(rr, errors.New("some error"))
 
 	res := rr.Result()
-	if res.StatusCode != http.StatusInternalServerError {
-		t.Errorf("got status %d; want status %d", res.StatusCode, http.StatusInternalServerError)
-	}
+	assert.Equal(t, http.StatusInternalServerError, res.StatusCode)
 }
 
 func TestApplication_ClientError(t *testing.T) {
@@ -31,10 +28,7 @@ func TestApplication_ClientError(t *testing.T) {
 			rr := httptest.NewRecorder()
 			app.clientError(rr, code)
 
-			res := rr.Result()
-			if res.StatusCode != code {
-				t.Errorf("got status %d; want status %d", res.StatusCode, code)
-			}
+			assert.Equal(t, code, rr.Result().StatusCode)
 		})
 	}
 }
@@ -44,10 +38,7 @@ func TestApplication_NotFound(t *testing.T) {
 	rr := httptest.NewRecorder()
 	app.notFound(rr)
 
-	code := rr.Code
-	if code != http.StatusNotFound {
-		t.Errorf("got status = %d; want = %d", code, http.StatusNotFound)
-	}
+	assert.Equal(t, http.StatusNotFound, rr.Code)
 }
 
 func TestApplication_Render(t *testing.T) {
@@ -83,16 +74,10 @@ func TestApplication_Render(t *testing.T) {
 
 			statusCode := rr.Code
 			body, err := io.ReadAll(rr.Body)
-			if err != nil {
-				t.Fatalf("Unexpected error = %v", err)
-			}
 
-			if !strings.Contains(string(body), tc.wantContent) {
-				t.Errorf("Did not find the expected content: %s", tc.wantContent)
-			}
-			if statusCode != tc.wantStatus {
-				t.Errorf("got status code = %d; want status code = %d", statusCode, tc.wantStatus)
-			}
+			assert.NoError(t, err)
+			assert.Contains(t, string(body), tc.wantContent)
+			assert.Equal(t, tc.wantStatus, statusCode)
 		})
 	}
 }
@@ -124,13 +109,9 @@ func TestApplication_IsAuthenticated(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			req, err := http.NewRequestWithContext(tc.requestContext, http.MethodGet, "/", nil)
-			if err != nil {
-				t.Fatalf("Unexpected error = %v", err)
-			}
+			assert.NoError(t, err)
 			isAuthenticated := app.isAuthenticated(req)
-			if isAuthenticated != tc.wantIsAuthenticated {
-				t.Errorf("app.isAuthenticated(req) = %v; expected %v", isAuthenticated, tc.wantIsAuthenticated)
-			}
+			assert.Equal(t, tc.wantIsAuthenticated, isAuthenticated)
 		})
 	}
 }
@@ -160,30 +141,21 @@ func TestApplication_DecodePostForm(t *testing.T) {
 			FirstName: "John", LastName: "Smith", Age: 100,
 		}
 
-		if !cmp.Equal(wantDst, dst) {
-			t.Errorf("The decoded struct does not match the expected decoding")
-			t.Errorf(cmp.Diff(wantDst, dst))
-		}
+		assert.Equal(t, wantDst, dst)
 	})
 
 	t.Run("Should panic on non-pointer destination", func(t *testing.T) {
 		postReq := createPostRequest(t, "/", validFormData)
 
-		defer func() {
-			if r := recover(); r == nil {
-				t.Errorf("app.decodePostForm() did not panic for a non-pointer destination")
-			}
-		}()
-
-		app.decodePostForm(postReq, personForm{})
+		assert.Panics(t, func() {
+			app.decodePostForm(postReq, personForm{})
+		})
 	})
 
 	t.Run("Should error on invalid form data", func(t *testing.T) {
 		postReq := createPostRequest(t, "/", invalidFormData)
 
 		err := app.decodePostForm(postReq, &personForm{})
-		if err == nil {
-			t.Errorf("app.decodePostForm() did not return an error")
-		}
+		assert.Error(t, err)
 	})
 }

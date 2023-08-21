@@ -1,7 +1,7 @@
 package validation
 
 import (
-	"github.com/96malhar/snippetbox/internal/assert"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -18,9 +18,7 @@ func TestNotBlank(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			got := NotBlank(tc.input)
-			if got != tc.want {
-				t.Errorf("Got = %v; Want = %v", got, tc.want)
-			}
+			assert.Equal(t, tc.want, got)
 		})
 	}
 }
@@ -40,9 +38,7 @@ func TestMaxChars(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			got := MaxChars(tc.input, tc.maxChars)
-			if got != tc.want {
-				t.Errorf("Got = %v; Want = %v", got, tc.want)
-			}
+			assert.Equal(t, tc.want, got)
 		})
 	}
 }
@@ -62,9 +58,7 @@ func TestMinChars(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			got := MinChars(tc.input, tc.minChars)
-			if got != tc.want {
-				t.Errorf("Got = %v; Want = %v", got, tc.want)
-			}
+			assert.Equal(t, tc.want, got)
 		})
 	}
 }
@@ -83,9 +77,7 @@ func TestMatches_ValidEmail(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.input, func(t *testing.T) {
 			got := Matches(tc.input, EmailRX)
-			if got != true {
-				t.Errorf("Got = %v; Want = true", got)
-			}
+			assert.True(t, got)
 		})
 	}
 }
@@ -107,9 +99,7 @@ func TestMatches_InvalidEmail(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.input, func(t *testing.T) {
 			got := Matches(tc.input, EmailRX)
-			if got != false {
-				t.Errorf("Got = %v; Want = false", got)
-			}
+			assert.False(t, got)
 		})
 	}
 }
@@ -128,9 +118,7 @@ func TestPermittedValue(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			got := PermittedValue(tc.input, tc.permittedValues...)
-			if got != tc.want {
-				t.Errorf("Got = %v; Want = %v", got, tc.want)
-			}
+			assert.Equal(t, tc.want, got)
 		})
 	}
 }
@@ -142,12 +130,8 @@ func TestValidator_CheckField(t *testing.T) {
 	v.CheckField(true, "fieldKey1", "errorMessage1")
 	v.CheckField(false, "fieldKey2", "errorMessage2")
 
-	if _, ok := v.FieldErrors["fieldKey1"]; ok {
-		t.Errorf("fieldKey1 cannot exist inside the FieldErrors map")
-	}
-	if v.FieldErrors["fieldKey2"] != "errorMessage2" {
-		t.Errorf("v.FieldErrors[fieldKey2] = %s; want = errorMessage2", v.FieldErrors["fieldKey2"])
-	}
+	assert.NotContains(t, "fieldKey1", v.FieldErrors)
+	assert.Equal(t, "errorMessage2", v.FieldErrors["fieldKey2"])
 }
 
 func TestValidator_CheckNonField(t *testing.T) {
@@ -157,8 +141,8 @@ func TestValidator_CheckNonField(t *testing.T) {
 	v.CheckNonField(true, "errorMessage1")
 	v.CheckNonField(false, "errorMessage2")
 
-	assert.SliceDoesNotContain(t, v.NonFieldErrors, "errorMessage1")
-	assert.SliceContains(t, v.NonFieldErrors, "errorMessage2")
+	assert.NotContains(t, v.NonFieldErrors, "errorMessage1")
+	assert.Contains(t, v.NonFieldErrors, "errorMessage2")
 }
 
 func TestValidator_Valid(t *testing.T) {
@@ -194,9 +178,7 @@ func TestValidator_Valid(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			gotValid := tc.validator.Valid()
-			if gotValid != tc.wantValid {
-				t.Errorf("v.Valid() = %v; want = %v", gotValid, tc.wantValid)
-			}
+			assert.Equal(t, tc.wantValid, gotValid)
 		})
 	}
 }

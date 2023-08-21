@@ -1,6 +1,7 @@
 package datetime
 
 import (
+	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
 )
@@ -28,9 +29,8 @@ func TestDateTimeHandler_GetCurrentTimeUTC(t *testing.T) {
 				return tt.setTime
 			}
 			h := &Handler{}
-			if got := h.GetCurrentTimeUTC(); !got.Equal(tt.want) {
-				t.Errorf("GetCurrentTimeUTC() = %v, want %v", got, tt.want)
-			}
+			got := h.GetCurrentTimeUTC()
+			assert.True(t, got.Equal(tt.want))
 		})
 	}
 }
