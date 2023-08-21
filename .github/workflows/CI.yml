@@ -34,6 +34,9 @@ jobs:
       - name: Setup gotestfmt
         uses: gotesttools/gotestfmt-action@v2
 
+      - name: Install golang-migrate
+        run: go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.16.2
+
       - name: Smoke test
         run: task run:smoketest
 

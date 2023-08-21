@@ -7,7 +7,6 @@ require (
 	github.com/alexedwards/scs/v2 v2.5.1
 	github.com/go-chi/chi/v5 v5.0.8
 	github.com/go-playground/form/v4 v4.2.0
-	github.com/google/go-cmp v0.5.9
 	github.com/google/uuid v1.3.0
 	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.10.7

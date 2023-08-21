@@ -63,6 +63,7 @@ tasks:
       - defer: { task: db:teardown }
       - task: db:setup
       - task: db:migrations:up
+      - task: tls-cert:generate
       - ./smoke_test.sh
 
   run:tests:all:
