@@ -20,8 +20,14 @@ func secureHeaders(next http.Handler) http.Handler {
 
 func (app *application) logRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		app.infoLog.Printf("%s - %s %s %s", r.RemoteAddr, r.Proto, r.Method, r.URL.RequestURI())
+		var (
+			ip     = r.RemoteAddr
+			proto  = r.Proto
+			method = r.Method
+			uri    = r.URL.RequestURI()
+		)
 
+		app.logger.Info("received request", "ip", ip, "proto", proto, "method", method, "uri", uri)
 		next.ServeHTTP(w, r)
 	})
 }
@@ -31,7 +37,7 @@ func (app *application) recoverPanic(next http.Handler) http.Handler {
 		defer func() {
 			if err := recover(); err != nil {
 				w.Header().Set("Connection", "close")
-				app.serverError(w, fmt.Errorf("%s", err))
+				app.serverError(w, r, fmt.Errorf("%s", err))
 			}
 		}()
 
@@ -42,7 +48,7 @@ func (app *application) recoverPanic(next http.Handler) http.Handler {
 func (app *application) requireAuthentication(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !app.isAuthenticated(r) {
-			app.errorLog.Printf("Authentication required for: %s %s", r.Method, r.URL.RequestURI())
+			app.logger.Error("Authentication required", "method", r.Method, "uri", r.URL.RequestURI())
 			app.sessionManager.Put(r.Context(), "redirectPathAfterLogin", r.URL.Path)
 			http.Redirect(w, r, "/user/login", http.StatusSeeOther)
 			return
@@ -67,7 +73,7 @@ func (app *application) authenticate(next http.Handler) http.Handler {
 
 		exists, err := app.userStore.Exists(id)
 		if err != nil {
-			app.serverError(w, err)
+			app.serverError(w, r, err)
 			return
 		}
 

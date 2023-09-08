@@ -125,8 +125,6 @@ func TestPermittedValue(t *testing.T) {
 
 func TestValidator_CheckField(t *testing.T) {
 	v := &Validator{}
-	v.initialize()
-
 	v.CheckField(true, "fieldKey1", "errorMessage1")
 	v.CheckField(false, "fieldKey2", "errorMessage2")
 
@@ -136,8 +134,6 @@ func TestValidator_CheckField(t *testing.T) {
 
 func TestValidator_CheckNonField(t *testing.T) {
 	v := &Validator{}
-	v.initialize()
-
 	v.CheckNonField(true, "errorMessage1")
 	v.CheckNonField(false, "errorMessage2")
 

@@ -7,15 +7,13 @@ import (
 	"github.com/alexedwards/scs/v2"
 	"github.com/go-playground/form/v4"
 	"html/template"
-	"log"
+	"log/slog"
 	"net/http"
 	"runtime/debug"
 )
 
 type application struct {
-	debug          bool
-	errorLog       *log.Logger
-	infoLog        *log.Logger
+	logger         *slog.Logger
 	snippetStore   snippetStoreInterface
 	userStore      userStoreInterface
 	templateCache  map[string]*template.Template
@@ -23,15 +21,14 @@ type application struct {
 	sessionManager *scs.SessionManager
 }
 
-func (app *application) serverError(w http.ResponseWriter, err error) {
-	trace := fmt.Sprintf("%s\n%s", err.Error(), debug.Stack())
-	app.errorLog.Output(2, trace)
+func (app *application) serverError(w http.ResponseWriter, r *http.Request, err error) {
+	var (
+		method = r.Method
+		uri    = r.URL.RequestURI()
+		trace  = string(debug.Stack())
+	)
 
-	if app.debug {
-		http.Error(w, trace, http.StatusInternalServerError)
-		return
-	}
-
+	app.logger.Error(err.Error(), "method", method, "uri", uri, "trace", trace)
 	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }
 
@@ -43,18 +40,19 @@ func (app *application) notFound(w http.ResponseWriter) {
 	app.clientError(w, http.StatusNotFound)
 }
 
-func (app *application) render(w http.ResponseWriter, status int, page string, data *templateData) {
+func (app *application) render(w http.ResponseWriter, r *http.Request, status int, page string, data templateData) {
 	ts, ok := app.templateCache[page]
 	if !ok {
 		err := fmt.Errorf("the template %s does not exist", page)
-		app.serverError(w, err)
+		app.serverError(w, r, err)
 		return
 	}
 
 	buf := new(bytes.Buffer)
+
 	err := ts.ExecuteTemplate(buf, "base", data)
 	if err != nil {
-		app.serverError(w, err)
+		app.serverError(w, r, err)
 		return
 	}
 

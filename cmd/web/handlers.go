@@ -35,18 +35,18 @@ type userLoginForm struct {
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	snippets, err := app.snippetStore.Latest()
 	if err != nil {
-		app.serverError(w, err)
+		app.serverError(w, r, err)
 		return
 	}
 
 	data := app.newTemplateData(r)
 	data.Snippets = snippets
-	app.render(w, http.StatusOK, "home.tmpl", data)
+	app.render(w, r, http.StatusOK, "home.tmpl", data)
 }
 
 func (app *application) about(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData(r)
-	app.render(w, http.StatusOK, "about.tmpl", data)
+	app.render(w, r, http.StatusOK, "about.tmpl", data)
 }
 
 func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
@@ -61,14 +61,14 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, store.ErrNoRecord) {
 			app.notFound(w)
 		} else {
-			app.serverError(w, err)
+			app.serverError(w, r, err)
 		}
 		return
 	}
 
 	data := app.newTemplateData(r)
 	data.Snippet = snippet
-	app.render(w, http.StatusOK, "view.tmpl", data)
+	app.render(w, r, http.StatusOK, "view.tmpl", data)
 }
 
 func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
@@ -77,7 +77,7 @@ func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 		Expires: 365,
 	}
 
-	app.render(w, http.StatusOK, "create.tmpl", data)
+	app.render(w, r, http.StatusOK, "create.tmpl", data)
 }
 
 func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request) {
@@ -97,13 +97,13 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 	if !form.Valid() {
 		data := app.newTemplateData(r)
 		data.Form = form
-		app.render(w, http.StatusUnprocessableEntity, "create.tmpl", data)
+		app.render(w, r, http.StatusUnprocessableEntity, "create.tmpl", data)
 		return
 	}
 
 	id, err := app.snippetStore.Insert(form.Title, form.Content, form.Expires)
 	if err != nil {
-		app.serverError(w, err)
+		app.serverError(w, r, err)
 		return
 	}
 
@@ -114,7 +114,7 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 func (app *application) userSignup(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData(r)
 	data.Form = userSignupForm{}
-	app.render(w, http.StatusOK, "signup.tmpl", data)
+	app.render(w, r, http.StatusOK, "signup.tmpl", data)
 }
 
 func (app *application) userSignupPost(w http.ResponseWriter, r *http.Request) {
@@ -138,7 +138,7 @@ func (app *application) userSignupPost(w http.ResponseWriter, r *http.Request) {
 	if !form.Valid() {
 		data := app.newTemplateData(r)
 		data.Form = form
-		app.render(w, http.StatusUnprocessableEntity, "signup.tmpl", data)
+		app.render(w, r, http.StatusUnprocessableEntity, "signup.tmpl", data)
 		return
 	}
 
@@ -150,10 +150,10 @@ func (app *application) userSignupPost(w http.ResponseWriter, r *http.Request) {
 			form.CheckField(false, "email", "Email address is already in use")
 			data := app.newTemplateData(r)
 			data.Form = form
-			app.render(w, http.StatusUnprocessableEntity, "signup.tmpl", data)
+			app.render(w, r, http.StatusUnprocessableEntity, "signup.tmpl", data)
 			return
 		}
-		app.serverError(w, err)
+		app.serverError(w, r, err)
 		return
 	}
 
@@ -164,7 +164,7 @@ func (app *application) userSignupPost(w http.ResponseWriter, r *http.Request) {
 func (app *application) userLogin(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData(r)
 	data.Form = userLoginForm{}
-	app.render(w, http.StatusOK, "login.tmpl", data)
+	app.render(w, r, http.StatusOK, "login.tmpl", data)
 }
 
 func (app *application) userLoginPost(w http.ResponseWriter, r *http.Request) {
@@ -183,7 +183,7 @@ func (app *application) userLoginPost(w http.ResponseWriter, r *http.Request) {
 	if !form.Valid() {
 		data := app.newTemplateData(r)
 		data.Form = form
-		app.render(w, http.StatusUnprocessableEntity, "login.tmpl", data)
+		app.render(w, r, http.StatusUnprocessableEntity, "login.tmpl", data)
 		return
 	}
 
@@ -193,16 +193,16 @@ func (app *application) userLoginPost(w http.ResponseWriter, r *http.Request) {
 			form.CheckNonField(false, "Email or password is incorrect")
 			data := app.newTemplateData(r)
 			data.Form = form
-			app.render(w, http.StatusUnprocessableEntity, "login.tmpl", data)
+			app.render(w, r, http.StatusUnprocessableEntity, "login.tmpl", data)
 			return
 		}
-		app.serverError(w, err)
+		app.serverError(w, r, err)
 		return
 	}
 
 	err = app.sessionManager.RenewToken(r.Context())
 	if err != nil {
-		app.serverError(w, err)
+		app.serverError(w, r, err)
 		return
 	}
 
@@ -220,7 +220,7 @@ func (app *application) userLoginPost(w http.ResponseWriter, r *http.Request) {
 func (app *application) userLogoutPost(w http.ResponseWriter, r *http.Request) {
 	err := app.sessionManager.RenewToken(r.Context())
 	if err != nil {
-		app.serverError(w, err)
+		app.serverError(w, r, err)
 		return
 	}
 
@@ -241,7 +241,7 @@ func (app *application) accountView(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, store.ErrNoRecord) {
 			http.Redirect(w, r, "/user/login", http.StatusSeeOther)
 		} else {
-			app.serverError(w, err)
+			app.serverError(w, r, err)
 		}
 		return
 	}
@@ -249,5 +249,5 @@ func (app *application) accountView(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData(r)
 	data.User = user
 
-	app.render(w, http.StatusOK, "account.tmpl", data)
+	app.render(w, r, http.StatusOK, "account.tmpl", data)
 }

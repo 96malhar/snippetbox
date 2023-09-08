@@ -240,7 +240,7 @@ func TestSnippetCreatePost(t *testing.T) {
 				form.Add("expires", tc.snippetExpires)
 				resp := ts.postForm(t, "/snippet/create", form)
 
-				assert.Equal(t, resp.StatusCode, tc.wantStatusCode)
+				assert.Equal(t, tc.wantStatusCode, resp.StatusCode)
 
 				for key, val := range tc.wantHeaders {
 					assert.Equal(t, resp.Header.Get(key), val)

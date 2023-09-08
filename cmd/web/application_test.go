@@ -13,7 +13,7 @@ import (
 func TestApplication_ServerError(t *testing.T) {
 	app := newTestApplication(t)
 	rr := httptest.NewRecorder()
-	app.serverError(rr, errors.New("some error"))
+	app.serverError(rr, NewTestRequest(), errors.New("some error"))
 
 	res := rr.Result()
 	assert.Equal(t, http.StatusInternalServerError, res.StatusCode)
@@ -45,21 +45,21 @@ func TestApplication_Render(t *testing.T) {
 	testcases := []struct {
 		name        string
 		pageName    string
-		data        *templateData
+		data        templateData
 		wantContent string
 		wantStatus  int
 	}{
 		{
 			name:        "Valid template",
 			pageName:    "create.tmpl",
-			data:        &templateData{Form: snippetCreateForm{}},
+			data:        templateData{Form: snippetCreateForm{}},
 			wantContent: "Create a New Snippet",
 			wantStatus:  http.StatusOK,
 		},
 		{
 			name:        "Invalid template",
 			pageName:    "does-not-exist.tmpl",
-			data:        &templateData{},
+			data:        templateData{},
 			wantContent: "Internal Server Error",
 			wantStatus:  http.StatusInternalServerError,
 		},
@@ -70,7 +70,7 @@ func TestApplication_Render(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			rr := httptest.NewRecorder()
-			app.render(rr, http.StatusOK, tc.pageName, tc.data)
+			app.render(rr, NewTestRequest(), http.StatusOK, tc.pageName, tc.data)
 
 			statusCode := rr.Code
 			body, err := io.ReadAll(rr.Body)
@@ -158,4 +158,8 @@ func TestApplication_DecodePostForm(t *testing.T) {
 		err := app.decodePostForm(postReq, &personForm{})
 		assert.Error(t, err)
 	})
+}
+
+func NewTestRequest() *http.Request {
+	return httptest.NewRequest(http.MethodGet, "https://example.org/path?foo=bar", nil)
 }

@@ -2,26 +2,19 @@ package validation
 
 import (
 	"regexp"
+	"slices"
 	"strings"
-	"sync"
 	"unicode/utf8"
 )
 
 // EmailRX stores the regex to validate email addresses.
 // Parsing this pattern once at startup and storing the compiled *regexp.Regexp in a
 // variable is more performant than re-parsing the pattern each time we need it.
-var EmailRX = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+var EmailRX = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 
 type Validator struct {
-	once           sync.Once
 	FieldErrors    map[string]string
 	NonFieldErrors []string
-}
-
-func (v *Validator) initialize() {
-	v.once.Do(func() {
-		v.FieldErrors = make(map[string]string)
-	})
 }
 
 // Valid returns true if the FieldErrors map and NonFieldErrors slice doesn't contain any entries.
@@ -32,6 +25,10 @@ func (v *Validator) Valid() bool {
 // addFieldError adds an error message to the FieldErrors map (so long as no
 // entry already exists for the given key).
 func (v *Validator) addFieldError(key, message string) {
+	if v.FieldErrors == nil {
+		v.FieldErrors = make(map[string]string)
+	}
+
 	if _, exists := v.FieldErrors[key]; !exists {
 		v.FieldErrors[key] = message
 	}
@@ -45,7 +42,6 @@ func (v *Validator) addNonFieldError(message string) {
 // CheckField adds an error message to the FieldErrors map only if a
 // validation check is not 'ok'.
 func (v *Validator) CheckField(ok bool, key, message string) {
-	v.initialize()
 	if !ok {
 		v.addFieldError(key, message)
 	}
@@ -53,7 +49,6 @@ func (v *Validator) CheckField(ok bool, key, message string) {
 
 // CheckNonField adds an error message to NonFieldErrors slice only if a validation check is not 'ok'.
 func (v *Validator) CheckNonField(ok bool, message string) {
-	v.initialize()
 	if !ok {
 		v.addNonFieldError(message)
 	}
@@ -71,12 +66,7 @@ func MaxChars(value string, n int) bool {
 
 // PermittedValue returns true if a value is in a list of permitted integers.
 func PermittedValue[T comparable](value T, permittedValues ...T) bool {
-	for i := range permittedValues {
-		if value == permittedValues[i] {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(permittedValues, value)
 }
 
 // MinChars returns true if a value contains at least n characters.
