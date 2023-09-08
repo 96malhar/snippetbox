@@ -1,2 +1,2 @@
 ignore:
-  - "cmd/api/main.go"
+  - "cmd/web/main.go"
