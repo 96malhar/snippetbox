@@ -26,12 +26,12 @@ RESPONSE=$(curl -k -s https://localhost:4000/ping)
 
 # Check if the response contains the expected string
 EXPECTED="OK"
-if [[ $RESPONSE == "$EXPECTED" ]]; then
-  echo "Smoke test passed. Server is running correctly."
-  exit 0
-else
+if [[ $RESPONSE != "$EXPECTED" ]]; then
   echo "Smoke test failed. Server did not respond as expected."
-  echo "Expected: $EXPECTED"
-  echo "Actual  : $RESPONSE"
-  exit 1
-fi
+    echo "Expected: $EXPECTED"
+    echo "Actual  : $RESPONSE"
+    exit 1
+  fi
+
+echo "=====SMOKE TEST PASSED!====="
+exit 0

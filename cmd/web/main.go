@@ -8,7 +8,6 @@ import (
 	"github.com/alexedwards/scs/postgresstore"
 	"github.com/alexedwards/scs/v2"
 	"github.com/go-playground/form/v4"
-	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"log"
 	"net/http"
@@ -54,10 +53,6 @@ func newApplication() *application {
 		infoLog.Print("Running in debug mode...")
 	}
 
-	if err := godotenv.Load(); err != nil {
-		infoLog.Print("Failed to load environment variables")
-	}
-
 	db, err := openDB()
 	if err != nil {
 		errorLog.Fatal(err)
@@ -91,7 +86,7 @@ func newApplication() *application {
 func openDB() (*sql.DB, error) {
 	dsn := os.Getenv("SNIPPETBOX_DB_DSN")
 	if dsn == "" {
-		dsn = "postgresql://postgres:postgres@localhost:5432/postgres?sslmode=disable"
+		panic("SNIPPETBOX_DB_DSN environment variable not set")
 	}
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
